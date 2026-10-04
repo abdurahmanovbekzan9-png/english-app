@@ -66,21 +66,21 @@ async function load(){
   if(!Object.keys(TN).length)TN=FALLBACK_TN;
  }
  const d=new Date().toDateString();if(P.last!==d){const y=new Date(Date.now()-864e5).toDateString();if(P.last!==y)P.streak=0;saveP()}
- view();
+ await pullProfile();P.reg?view():reg();
  pullW().then(()=>{if($("nw"))words()});
 }
 function nav(){return '<div class="nav"><button class="'+(tab=="home"?"on":"")+'" onclick="tab=\'home\';view()">📚 Учиться</button><button class="'+(tab=="profile"?"on":"")+'" onclick="tab=\'profile\';view()">👤 Профиль</button></div>'}
 function view(){ $("ov").innerHTML=""; tab=="profile"?profile():home() }
 function home(){
- $("app").innerHTML='<h1>Привет, '+esc(U.first_name||"друг")+'! 👋</h1><div class="pills"><span class="pill">🔥 '+P.streak+'</span><span class="pill">⭐ '+P.xp+' XP</span></div>'+
+ $("app").innerHTML='<h1>Привет, '+esc((P.reg&&P.reg.name)||U.first_name||"друг")+'! 👋</h1><div class="pills"><span class="pill">🔥 '+P.streak+'</span><span class="pill">⭐ '+P.xp+' XP</span></div>'+
  (OFF?'<p style="font-size:12px">⚠️ Таблица недоступна ('+esc(OFF)+'). Работает встроенная база.</p>':'')+'<h2 style="margin-top:0">Упражнения</h2>'+
  '<button class="card" onclick="setup()"><span class="ic">🧩</span><span><b>Word Order</b><p>Собери предложение из облачков</p></span></button>'+
- '<button class="card" onclick="words()"><span class="ic">📝</span><span><b>Мои слова</b><p>Свои слова: добавляй и запоминай</p></span></button>'+nav();
+ '<button class="card" onclick="vocab()"><span class="ic">🎓</span><span><b>Учить слова</b><p>Готовые наборы: глаголы, существительные…</p></span></button><button class="card" onclick="words()"><span class="ic">📝</span><span><b>Мои слова</b><p>Свои слова: добавляй и запоминай</p></span></button>'+nav();
 }
 function profile(){
  const acc=P.solved?Math.round(P.correct/P.solved*100):0,n=(U.first_name||"?")+" "+(U.last_name||"");
  $("app").innerHTML='<div class="c"><div class="av">'+esc((U.first_name||"?")[0].toUpperCase())+'</div><h1 style="margin:0">'+esc(n.trim())+'</h1><p>'+(U.username?"@"+esc(U.username):"ID "+U.id)+'</p></div><h2>Статистика</h2><div class="grid">'+
- '<div class="stat"><b>⭐ '+P.xp+'</b><p>Очки XP</p></div><div class="stat"><b>🔥 '+P.streak+'</b><p>Серия дней</p></div><div class="stat"><b>'+P.solved+'</b><p>Решено</p></div><div class="stat"><b>'+acc+'%</b><p>Точность</p></div></div>'+nav();
+ '<div class="stat"><b>⭐ '+P.xp+'</b><p>Очки XP</p></div><div class="stat"><b>🔥 '+P.streak+'</b><p>Серия дней</p></div><div class="stat"><b>'+P.solved+'</b><p>Решено</p></div><div class="stat"><b>'+acc+'%</b><p>Точность</p></div></div><h2>Профиль</h2><p>Уровень: '+esc((P.reg&&P.reg.lvl)||"—")+' · Цель: '+esc((P.reg&&P.reg.goal)||"—")+'</p><br><button class="btn sec" onclick="reg()">Изменить профиль</button>'+nav();
 }
 const chips=(k,opts)=>'<div class="chips">'+opts.map(o=>'<button class="chip '+(F[k]==o[0]?"on":"")+'" onclick="F.'+k+'=\''+o[0]+'\';setup()">'+o[1]+'</button>').join("")+'</div>';
 function setup(){
@@ -127,7 +127,7 @@ function done(){
 }
 function send(it,ok){
  if(!API_URL)return;
- const body={uid:U.id,name:((U.first_name||"")+" "+(U.last_name||"")).trim(),username:U.username||"",sid:it.id,tense:it.tense,type:it.type,lvl:it.lvl,ok:ok?1:0,answer:G.placed.map(c=>G.cards.find(z=>z.id==c).w).join(" ")};
+ const body={uid:U.id,name:(P.reg&&P.reg.name)||((U.first_name||"")+" "+(U.last_name||"")).trim(),username:U.username||"",sid:it.id,tense:it.tense,type:it.type,lvl:it.lvl,ok:ok?1:0,answer:G.placed.map(c=>G.cards.find(z=>z.id==c).w).join(" ")};
  try{fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(body)}).catch(()=>{})}catch(e){}
 }
 let W=[],WT={},tm;
@@ -136,13 +136,19 @@ function loadW(){try{W=JSON.parse(localStorage.getItem(wkey)||"[]")}catch(e){W=[
 async function pullW(){if(!API_URL||W.length)return;try{const j=await (await fetch(API_URL+"?action=words&uid="+encodeURIComponent(U.id))).json();if(j.words&&j.words.length&&!W.length){W=j.words.map(x=>({w:String(x.w),t:String(x.t),box:+x.box||0,c:+x.c||0,x:+x.x||0,added:x.added||""}));saveW(true)}}catch(e){}}
 function saveW(local){try{localStorage.setItem(wkey,JSON.stringify(W))}catch(e){}if(local||!API_URL)return;clearTimeout(tm);tm=setTimeout(()=>{fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"words",uid:U.id,words:W})}).catch(()=>{})},800)}
 function tick(){const d=new Date().toDateString();if(P.last!==d){P.streak++;P.last=d}}
-let tt;
-const tp=(p,b)=>'<div class="top"><button class="x" onclick="'+(b||"words()")+'">✕</button><div class="bar"><i style="width:'+p+'%"></i></div></div>';
+let tt,PL=[],BK="words()",VS="verbs",SEL=[],REG={};
+const isSet=x=>String(x.added).startsWith("set:"),userPool=()=>W.map((x,i)=>i).filter(i=>!isSet(W[i])),wi=(id,w)=>W.findIndex(x=>x.added=="set:"+id&&x.w==w);
+const tp=(p,b)=>'<div class="top"><button class="x" onclick="'+(b||BK)+'">✕</button><div class="bar"><i style="width:'+p+'%"></i></div></div>';
 const say=i=>{try{const u=new SpeechSynthesisUtterance(W[i].w);u.lang="en-US";speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}};
 async function tr(w){
- const ru=/[а-яё]/i.test(w);
- try{const j=await (await fetch("https://api.mymemory.translated.net/get?q="+encodeURIComponent(w)+"&langpair="+(ru?"ru|en":"en|ru"))).json();const t=j.responseData&&j.responseData.translatedText;if(t&&!/MYMEMORY|INVALID|QUERY LENGTH/i.test(t))return t}catch(e){}
- try{const j=await (await fetch("https://translate.googleapis.com/translate_a/single?client=gtx&sl="+(ru?"ru":"en")+"&tl="+(ru?"en":"ru")+"&dt=t&q="+encodeURIComponent(w))).json();return j[0].map(x=>x[0]).join("")}catch(e){}
+ const ru=/[а-яё]/i.test(w),sl=ru?"ru":"en",tl=ru?"en":"ru",one=!/\s/.test(w);
+ try{
+  const j=await (await fetch("https://translate.googleapis.com/translate_a/single?client=gtx&sl="+sl+"&tl="+tl+"&dt=t&dt=bd&q="+encodeURIComponent(w))).json();
+  let t=j[0].map(x=>x[0]).join("").trim();if(one)t=t.toLowerCase();
+  const alt=one&&j[1]&&j[1][0]&&j[1][0][1]&&j[1][0][1].find(v=>v.toLowerCase()!=t&&v.toLowerCase()!=w.toLowerCase());
+  if(t)return alt?t+", "+alt:t;
+ }catch(e){}
+ try{const j=await (await fetch("https://api.mymemory.translated.net/get?q="+encodeURIComponent(w)+"&langpair="+sl+"|"+tl)).json();let t=j.responseData&&j.responseData.translatedText;if(t&&!/MYMEMORY|INVALID|QUERY LENGTH/i.test(t))return one?t.toLowerCase():t}catch(e){}
  return "";
 }
 async function autoTr(){
@@ -156,8 +162,8 @@ function words(){
  $("ov").innerHTML="";
  $("app").innerHTML='<div class="top"><button class="x" onclick="tab=\'home\';view()">✕</button><h1 style="margin:0">Мои слова</h1></div>'+
  '<div class="stat" style="margin-bottom:14px"><input class="in" id="nw" placeholder="Новое слово (по-английски или по-русски)" autocomplete="off" autocapitalize="none" oninput="clearTimeout(tt);tt=setTimeout(autoTr,600)"><input class="in" id="nt" placeholder="Перевод появится сам" autocomplete="off" oninput="this.dataset.m=1" onkeydown="if(event.key==\'Enter\')addW()"><p id="st" style="font-size:12px;min-height:16px;margin:0 0 8px"></p><button class="btn" onclick="addW()">Добавить</button></div>'+
- (W.length?'<button class="btn sec" style="margin-bottom:14px" onclick="wmodes()">Тренировать ('+W.length+')</button>':'<p class="c">Добавьте первое слово 👆</p>')+
- W.map((x,i)=>'<div class="stat row" style="margin-bottom:8px"><span><b style="font-size:17px">'+esc(x.w)+'</b><p>'+esc(x.t)+' · '+mast(x.box)+'</p></span><span><button class="x" onclick="say('+i+')">🔊</button><button class="x" onclick="delW('+i+')">🗑</button></span></div>').join("");
+ (userPool().length?'<button class="btn sec" style="margin-bottom:14px" onclick="BK=\'words()\';wmodes(userPool())">Тренировать ('+userPool().length+')</button>':'<p class="c">Добавьте первое слово 👆</p>')+
+ W.map((x,i)=>isSet(x)?"":'<div class="stat row" style="margin-bottom:8px"><span><b style="font-size:17px">'+esc(x.w)+'</b><p>'+esc(x.t)+' · '+mast(x.box)+'</p></span><span><button class="x" onclick="say('+i+')">🔊</button><button class="x" onclick="delW('+i+')">🗑</button></span></div>').join("");
 }
 function addW(){
  const w=$("nw").value.trim(),t=$("nt").value.trim();if(!w||!t){$("st").textContent="Введите слово и дождитесь перевода";return}
@@ -165,14 +171,14 @@ function addW(){
  saveW();words();setTimeout(()=>$("nw").focus(),50);
 }
 function delW(i){W.splice(i,1);saveW();words()}
-function pickW(n){return W.map((x,i)=>i).sort((a,b)=>(W[a].box-W[b].box)||Math.random()-.5).slice(0,n)}
-function wmodes(){
- const n=W.length,M=[["fc","🃏","Карточки","Переворачивай и оценивай себя",1],["mc","✅","Тест","Выбери правильный перевод",2],["wr","⌨️","Написание","Напиши слово по переводу",1],["mt","🔗","Подбор пар","Соедини слово и перевод",2]];
+function pickW(n){return PL.slice().sort((a,b)=>(W[a].box-W[b].box)||Math.random()-.5).slice(0,n)}
+function wmodes(p){
+ if(p)PL=p;const n=PL.length,M=[["fc","🃏","Карточки","Переворачивай и оценивай себя",1],["mc","✅","Тест","Выбери правильный перевод",2],["wr","⌨️","Написание","Напиши слово по переводу",1],["mt","🔗","Подбор пар","Соедини слово и перевод",2]];
  $("ov").innerHTML="";
  $("app").innerHTML=tp(0)+'<h1 style="margin:0 0 14px">Как тренируем?</h1>'+M.map(m=>n>=m[4]?'<button class="card" onclick="wgo(\''+m[0]+'\')"><span class="ic">'+m[1]+'</span><span><b>'+m[2]+'</b><p>'+m[3]+'</p></span></button>':'<div class="card off"><span class="ic">'+m[1]+'</span><span><b>'+m[2]+'</b><p>Нужно минимум '+m[4]+' слова</p></span></div>').join("");
 }
 function wgo(m){
- if(m=="mt"){const l=pickW(Math.min(6,W.length));WT={m,l,sc:0,t0:Date.now(),sel:null,done:0,tiles:sh(l.flatMap(i=>[{k:i,f:"w"},{k:i,f:"t"}]))};return mr()}
+ if(m=="mt"){const l=pickW(Math.min(6,PL.length));WT={m,l,sc:0,t0:Date.now(),sel:null,done:0,tiles:sh(l.flatMap(i=>[{k:i,f:"w"},{k:i,f:"t"}]))};return mr()}
  WT={m,l:sh(pickW(10)),i:0,sc:0,f:0};({fc:fr,mc:mq,wr:wq})[m]();
 }
 function wgrade(x,ok,xp){if(ok){x.c++;x.box++;WT.sc++;P.xp+=xp}else{x.x++;x.box=0}tick();saveP();saveW()}
@@ -192,7 +198,7 @@ function fr(){
 function fk(ok){wgrade(W[WT.l[WT.i]],ok,3);WT.f=0;wnext()}
 function mq(){
  const x=W[WT.l[WT.i]],d=Math.random()<.5,f=d?"w":"t",g=d?"t":"w";WT.chk=0;
- const o=sh([x[g]].concat(sh(W.filter(y=>y!==x&&y[g]!=x[g]).map(y=>y[g])).slice(0,3)));WT.ans=x[g];$("ov").innerHTML="";
+ const o=sh([x[g]].concat(sh([...new Set(PL.map(i=>W[i]).concat(W.filter((y,i)=>!PL.includes(i))).filter(y=>y!==x&&y[g]!=x[g]).map(y=>y[g]))]).slice(0,3)));WT.ans=x[g];$("ov").innerHTML="";
  $("app").innerHTML=tp(WT.i/WT.l.length*100)+'<p>Выбери '+(d?"перевод":"слово")+'</p><div class="ru" style="font-size:30px;margin:14px 0 20px">'+esc(x[f])+(d?' <button class="x" onclick="say('+WT.l[WT.i]+')">🔊</button>':'')+'</div>'+o.map(v=>'<button class="chip" style="display:block;width:100%;margin-bottom:10px;text-align:left" data-v="'+esc(v)+'" onclick="mpick(this)">'+esc(v)+'</button>').join("");
 }
 function mpick(b){
@@ -220,6 +226,36 @@ function mtap(j){
  if(y.k==x.k&&y.f!=x.f){x.d=y.d=1;WT.sel=null;WT.done++;W[x.k].c++;W[x.k].box++;P.xp+=3;
   if(WT.done==WT.l.length){tick();saveP();saveW();return wend("Время: "+Math.round((Date.now()-WT.t0)/1000)+" с")}mr()}
  else{WT.bad=[WT.sel,j];WT.sel=null;mr();setTimeout(()=>{WT.bad=null;mr()},500)}
+}
+const VOCAB=[{"id": "verbs", "n": "Глаголы", "i": "🏃", "w": "be:быть;have:иметь;do:делать;go:идти;come:приходить;get:получать;give:давать;take:брать;make:создавать;know:знать;think:думать;want:хотеть;need:нуждаться;like:нравиться;love:любить;see:видеть;look:смотреть;hear:слышать;listen:слушать;say:сказать;speak:говорить;tell:рассказывать;ask:спрашивать;answer:отвечать;work:работать;study:учиться;read:читать;write:писать;learn:учить;teach:преподавать;play:играть;eat:есть;drink:пить;sleep:спать;live:жить;buy:покупать;sell:продавать;open:открывать;close:закрывать;help:помогать;try:пытаться;start:начинать;finish:заканчивать;wait:ждать;call:звонить;run:бежать;walk:ходить пешком;travel:путешествовать;remember:помнить;forget:забывать"}, {"id": "nouns", "n": "Существительные", "i": "📦", "w": "time:время;year:год;day:день;week:неделя;man:мужчина;woman:женщина;child:ребёнок;friend:друг;family:семья;mother:мама;father:папа;brother:брат;sister:сестра;house:дом;room:комната;school:школа;teacher:учитель;student:студент;job:работа;city:город;country:страна;street:улица;car:машина;book:книга;phone:телефон;water:вода;food:еда;money:деньги;name:имя;word:слово;question:вопрос;problem:проблема;idea:идея;life:жизнь;world:мир;hand:рука;eye:глаз;head:голова;door:дверь;table:стол;window:окно;morning:утро;night:ночь;weather:погода;shop:магазин;doctor:врач;music:музыка;film:фильм;dinner:ужин;holiday:праздник"}, {"id": "adj", "n": "Прилагательные", "i": "🎨", "w": "good:хороший;bad:плохой;big:большой;small:маленький;new:новый;old:старый;young:молодой;happy:счастливый;sad:грустный;tired:уставший;busy:занятой;free:свободный;easy:лёгкий;difficult:трудный;important:важный;interesting:интересный;boring:скучный;beautiful:красивый;ugly:некрасивый;hot:горячий;cold:холодный;warm:тёплый;long:длинный;short:короткий;fast:быстрый;slow:медленный;strong:сильный;weak:слабый;rich:богатый;poor:бедный;clean:чистый;dirty:грязный;cheap:дешёвый;expensive:дорогой;early:ранний;late:поздний;ready:готовый;sure:уверенный;kind:добрый;funny:смешной;angry:злой;hungry:голодный;thirsty:жаждущий;full:полный;empty:пустой;careful:осторожный;famous:известный;different:разный;same:одинаковый;lazy:ленивый"}, {"id": "other", "n": "Наречия и предлоги", "i": "🧭", "w": "always:всегда;usually:обычно;often:часто;sometimes:иногда;never:никогда;now:сейчас;today:сегодня;tomorrow:завтра;yesterday:вчера;already:уже;yet:ещё;very:очень;too:слишком;also:также;again:снова;here:здесь;there:там;together:вместе;maybe:возможно;really:действительно;in:в;on:на;at:у, в;with:с;without:без;for:для;from:из, от;about:о;after:после;before:перед, до"}].map(S=>({...S,l:S.w.split(';').map(x=>x.split(':'))}));
+
+function ensure(S,k){const w=S.l[k][0];let i=wi(S.id,w);if(i<0){W.push({w,t:S.l[k][1],box:0,c:0,x:0,added:"set:"+S.id});i=W.length-1}return i}
+const vb=(S,k)=>{const i=wi(S.id,S.l[k][0]);return i>=0?W[i].box:-1};
+function vocab(){
+ $("ov").innerHTML="";
+ $("app").innerHTML='<div class="top"><button class="x" onclick="tab=\'home\';view()">✕</button><h1 style="margin:0">Учить слова</h1></div><p style="margin-bottom:14px">Выберите набор, отметьте слова и тренируйтесь</p>'+VOCAB.map(S=>{const kn=S.l.filter((x,k)=>vb(S,k)>=3).length;return '<button class="card" onclick="vset(\''+S.id+'\')"><span class="ic">'+S.i+'</span><span><b>'+S.n+'</b><p>Выучено '+kn+' из '+S.l.length+'</p></span></button>'}).join("");
+}
+function vset(id){
+ if(id){VS=id;SEL=[]}const S=VOCAB.find(x=>x.id==VS);BK="vset()";$("ov").innerHTML="";
+ $("app").innerHTML='<div class="top"><button class="x" onclick="vocab()">✕</button><h1 style="margin:0">'+S.i+' '+S.n+'</h1></div><div class="chips" style="margin-bottom:14px"><button class="chip" onclick="vsel(10)">⚡ 10 новых</button><button class="chip" onclick="vsel(99)">Все</button><button class="chip" onclick="SEL=[];vset()">Сбросить</button></div><div class="chips">'+S.l.map((x,k)=>'<button class="chip'+(SEL.includes(k)?" on":"")+'" onclick="vtg('+k+')" style="text-align:left"><b>'+esc(x[0])+'</b><br><small style="color:var(--s)">'+esc(x[1])+(vb(S,k)>=3?" ✅":"")+'</small></button>').join("")+'</div><div style="height:90px"></div><div class="foot"><div class="inner"><button class="btn" '+(SEL.length?"":"disabled")+' onclick="vgo()">Начать ('+SEL.length+')</button></div></div>';
+}
+function vtg(k){const y=scrollY,i=SEL.indexOf(k);i<0?SEL.push(k):SEL.splice(i,1);vset();scrollTo(0,y)}
+function vsel(n){const S=VOCAB.find(x=>x.id==VS);SEL=S.l.map((x,k)=>k).sort((a,b)=>vb(S,a)-vb(S,b)||Math.random()-.5).slice(0,n);vset()}
+function vgo(){const S=VOCAB.find(x=>x.id==VS);BK="vset()";wmodes(SEL.map(k=>ensure(S,k)))}
+async function pullProfile(){
+ if(P.reg||!API_URL)return;
+ try{const j=await Promise.race([fetch(API_URL+"?action=profile&uid="+encodeURIComponent(U.id)).then(r=>r.json()),new Promise((_,r)=>setTimeout(r,3000))]);if(j.profile&&j.profile.lvl){P.reg=j.profile;saveP()}}catch(e){}
+}
+function reg(){const r=P.reg||{};REG={name:r.name||U.first_name||"",lvl:r.lvl||"",goal:r.goal||""};regr()}
+function regr(){
+ const ch=(k,a)=>'<div class="chips">'+a.map(v=>'<button class="chip '+(REG[k]==v?"on":"")+'" onclick="REG.'+k+'=\''+v+'\';regr()">'+v+'</button>').join("")+'</div>';
+ $("ov").innerHTML="";
+ $("app").innerHTML='<div style="margin-top:4vh"><h1>Давайте познакомимся 👋</h1><p>Так учитель увидит ваш прогресс.</p></div><h2>Как вас зовут?</h2><input class="in" value="'+esc(REG.name)+'" oninput="REG.name=this.value;$(\'rb\').disabled=!(REG.name.trim()&&REG.lvl)"><h2>Ваш уровень</h2>'+ch("lvl",["A1","A2","B1","B2+"])+'<h2>Зачем вам английский?</h2>'+ch("goal",["Работа","Учёба","Путешествия","Для себя"])+'<div style="height:90px"></div><div class="foot"><div class="inner"><button class="btn" id="rb" '+(REG.name.trim()&&REG.lvl?"":"disabled")+' onclick="regDone()">Продолжить</button></div></div>';
+}
+function regDone(){
+ P.reg={name:REG.name.trim(),lvl:REG.lvl,goal:REG.goal};saveP();
+ if(API_URL)try{fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"profile",uid:U.id,name:P.reg.name,username:U.username||"",lvl:P.reg.lvl,goal:P.reg.goal})}).catch(()=>{})}catch(e){}
+ tab="home";view();
 }
 loadW();load();
 </script></body></html>
