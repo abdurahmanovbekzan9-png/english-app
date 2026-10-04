@@ -1,363 +1,86 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>English Master Mini App</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    :root {
-      --bg: #18222d;
-      --card-bg: #212d3b;
-      --accent: #2481cc;
-      --text: #ffffff;
-      --subtext: #8293a4;
-      --success: #4caf50;
-      --error: #f44336;
+const SS = SpreadsheetApp.getActiveSpreadsheet();
+
+// Запустите эту функцию вручную (один раз и после каждого обновления скрипта)
+function setup() {
+  let w = SS.getSheetByName("Words");
+  if (!w) {
+    w = SS.insertSheet("Words");
+    w.appendRow(["ID ученика", "Слово", "Перевод", "Уровень", "Верно", "Ошибок", "Добавлено"]);
+  }
+  let p = SS.getSheetByName("Profiles");
+  if (!p) {
+    p = SS.insertSheet("Profiles");
+    p.appendRow(["ID ученика", "Имя", "Username", "Уровень", "Цель", "Дата регистрации"]);
+    p.getRange("A1:F1").setFontWeight("bold");
+  }
+  let s = SS.getSheetByName("Students");
+  if (!s) s = SS.insertSheet("Students");
+  s.clear();
+  s.getRange("A1").setFormula(
+    '=QUERY(Results!A2:J,"select B, max(C), count(I), sum(I) where B is not null group by B label B \'ID ученика\', max(C) \'Имя\', count(I) \'Решено\', sum(I) \'Верно\'",0)'
+  );
+  s.getRange("E1").setValue("Точность %");
+  s.getRange("E2").setFormula('=ARRAYFORMULA(IF(C2:C="",,ROUND(D2:D/C2:C*100)))');
+  s.getRange("A1:E1").setFontWeight("bold");
+}
+
+function doPost(e) {
+  const d = JSON.parse(e.postData.contents);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    if (d.action === "words") {
+      saveWords(d);
+    } else if (d.action === "profile") {
+      saveProfile(d);
+    } else {
+      SS.getSheetByName("Results").appendRow([
+        new Date(), d.uid, d.name, d.username, d.sid, d.tense, d.type, d.lvl, d.ok, d.answer
+      ]);
     }
+  } finally {
+    lock.releaseLock();
+  }
+  return ContentService.createTextOutput("ok");
+}
 
-    body {
-      margin: 0;
-      padding: 12px;
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+function saveProfile(d) {
+  const sh = SS.getSheetByName("Profiles");
+  const rows = sh.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(d.uid)) {
+      sh.getRange(i + 1, 1, 1, 6).setValues([[d.uid, d.name, d.username, d.lvl, d.goal, rows[i][5]]]);
+      return;
     }
+  }
+  sh.appendRow([d.uid, d.name, d.username, d.lvl, d.goal, new Date()]);
+}
 
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
+function saveWords(d) {
+  const sh = SS.getSheetByName("Words");
+  const all = sh.getDataRange().getValues();
+  const head = all[0];
+  const rest = all.slice(1).filter(r => String(r[0]) !== String(d.uid));
+  const mine = (d.words || []).map(x => [d.uid, x.w, x.t, x.box || 0, x.c || 0, x.x || 0, x.added || ""]);
+  const out = [head].concat(rest, mine);
+  sh.clearContents();
+  sh.getRange(1, 1, out.length, 7).setValues(out);
+}
 
-    .nav-bar {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      margin-bottom: 12px;
-      padding-bottom: 4px;
-    }
-
-    .btn {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 10px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-    }
-
-    .btn-secondary {
-      background: #313d4c;
-      color: var(--text);
-    }
-
-    .word-chip {
-      display: inline-block;
-      background: #2b394a;
-      padding: 8px 12px;
-      border-radius: 6px;
-      margin: 4px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .sentence-box {
-      min-height: 50px;
-      border: 2px dashed #3a4b5e;
-      border-radius: 8px;
-      padding: 8px;
-      margin-bottom: 12px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0;
-      border-radius: 6px;
-      border: 1px solid #3a4b5e;
-      background: #141c24;
-      color: white;
-      box-sizing: border-box;
-    }
-
-    .hidden { display: none; }
-    .badge {
-      background: #2e3c4d;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      color: var(--subtext);
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Навигация -->
-  <div class="nav-bar">
-    <button class="btn" onclick="showTab('practice')">🏋️ Тренировка</button>
-    <button class="btn btn-secondary" onclick="showTab('words')">📚 Слова</button>
-    <button class="btn btn-secondary" onclick="showTab('grammar')">📖 Грамматика</button>
-    <button class="btn btn-secondary" onclick="showTab('leaderboard')">🏆 Лидеры</button>
-  </div>
-
-  <!-- Вкладка 1: Упражнения -->
-  <div id="tab-practice" class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h3>Конструктор предложений</h3>
-      <span id="user-xp" class="badge">XP: 0</span>
-    </div>
-    
-    <div id="exercise-area">
-      <p id="prompt-text" style="font-size: 18px; font-weight: bold;"></p>
-      
-      <div id="selected-words" class="sentence-box"></div>
-      <div id="available-words"></div>
-
-      <div style="margin-top: 12px; display: flex; gap: 8px;">
-        <button class="btn" onclick="checkAnswer()">Проверить</button>
-        <button class="btn btn-secondary" onclick="speakCurrentSentence()">🔊 Озвучить</button>
-      </div>
-      <p id="result-message"></p>
-    </div>
-  </div>
-
-  <!-- Вкладка 2: Словарь и Карточки -->
-  <div id="tab-words" class="card hidden">
-    <h3>Интервальное повторение слов</h3>
-    <div id="flashcard-box" style="text-align: center; padding: 20px; background: #18222d; border-radius: 8px;">
-      <h2 id="card-word">Загрузка...</h2>
-      <p id="card-trans" class="hidden" style="color: var(--subtext);"></p>
-      <button class="btn btn-secondary" onclick="toggleTranslation()">Показать перевод</button>
-      <div style="margin-top: 12px; display: flex; justify-content: center; gap: 8px;">
-        <button class="btn" style="background: var(--error);" onclick="answerCard(false)">Не помню</button>
-        <button class="btn" style="background: var(--success);" onclick="answerCard(true)">Помню</button>
-      </div>
-    </div>
-
-    <h4>Добавить новое слово</h4>
-    <input type="text" id="new-word" placeholder="Слово на английском">
-    <input type="text" id="new-trans" placeholder="Перевод на русский">
-    <button class="btn" style="width: 100%;" onclick="addNewWord()">Сохранить слово</button>
-  </div>
-
-  <!-- Вкладка 3: Теория Грамматики -->
-  <div id="tab-grammar" class="card hidden">
-    <h3>Шпаргалка по грамматике</h3>
-    <div style="font-size: 14px; line-height: 1.6;">
-      <details style="margin-bottom: 8px;">
-        <summary><b>Present Simple</b></summary>
-        <p>Используется для регулярных действий и фактов.<br>
-        <i>Формула:</i> Subject + V1 (s/es для he/she/it)<br>
-        <i>Пример:</i> I study English every day.</p>
-      </details>
-      <details style="margin-bottom: 8px;">
-        <summary><b>Present Continuous</b></summary>
-        <p>Используется для действий, происходящих прямо сейчас.<br>
-        <i>Формула:</i> Subject + am/is/are + V-ing<br>
-        <i>Пример:</i> She is speaking English right now.</p>
-      </details>
-      <details style="margin-bottom: 8px;">
-        <summary><b>Past Simple</b></summary>
-        <p>Используется для завершенных действий в прошлом.<br>
-        <i>Формула:</i> Subject + V2 / Ved<br>
-        <i>Пример:</i> They visited London last year.</p>
-      </details>
-    </div>
-  </div>
-
-  <!-- Вкладка 4: Лидерборд -->
-  <div id="tab-leaderboard" class="card hidden">
-    <h3>Топ-10 Учеников</h3>
-    <ol id="leaderboard-list" style="padding-left: 20px; line-height: 2;"></ol>
-  </div>
-
-  <script>
-    const API_URL = "https://script.google.com/macros/s/ВАШ_SCRIPT_ID/exec";
-    const tg = window.Telegram?.WebApp;
-    if (tg) tg.expand();
-
-    const user = tg?.initDataUnsafe?.user || { id: 12345, first_name: "TestUser", username: "test" };
-
-    let userWords = [];
-    let userProfile = { xp: 0 };
-    let currentExercise = { prompt: "Я изучаю английский каждый день", target: ["I", "study", "English", "every", "day"] };
-    let currentCardIndex = 0;
-
-    async function init() {
-      await loadProfile();
-      await loadWords();
-      renderExercise();
-    }
-
-    function showTab(tabName) {
-      ['practice', 'words', 'grammar', 'leaderboard'].forEach(t => {
-        document.getElementById(`tab-${t}`).classList.add('hidden');
-      });
-      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
-
-      if (tabName === 'leaderboard') loadLeaderboard();
-      if (tabName === 'words') renderCard();
-    }
-
-    // --- Загрузка данных с сервера ---
-    async function loadProfile() {
-      try {
-        const res = await fetch(`${API_URL}?action=profile&uid=${user.id}`);
-        const data = await res.json();
-        if (data.profile) {
-          userProfile = data.profile;
-          document.getElementById('user-xp').innerText = `XP: ${userProfile.xp || 0}`;
-        }
-      } catch (e) { console.error("Ошибка загрузки профиля", e); }
-    }
-
-    async function loadWords() {
-      try {
-        const res = await fetch(`${API_URL}?action=words&uid=${user.id}`);
-        const data = await res.json();
-        userWords = data.words || [];
-      } catch (e) { console.error("Ошибка загрузки слов", e); }
-    }
-
-    async function loadLeaderboard() {
-      const list = document.getElementById('leaderboard-list');
-      list.innerHTML = "Загрузка...";
-      try {
-        const res = await fetch(`${API_URL}?action=leaderboard`);
-        const data = await res.json();
-        list.innerHTML = (data.leaderboard || []).map(item => `<li><b>${item.name}</b> — ${item.xp} XP</li>`).join('');
-      } catch (e) { list.innerHTML = "Не удалось загрузить данные."; }
-    }
-
-    // --- Логика Упражнений ---
-    function renderExercise() {
-      document.getElementById('prompt-text').innerText = currentExercise.prompt;
-      document.getElementById('selected-words').innerHTML = '';
-      document.getElementById('result-message').innerText = '';
-
-      const shuffled = [...currentExercise.target].sort(() => Math.random() - 0.5);
-      const availBox = document.getElementById('available-words');
-      availBox.innerHTML = '';
-
-      shuffled.forEach(w => {
-        const chip = document.createElement('span');
-        chip.className = 'word-chip';
-        chip.innerText = w;
-        chip.onclick = () => {
-          if (chip.parentElement === availBox) {
-            document.getElementById('selected-words').appendChild(chip);
-          } else {
-            availBox.appendChild(chip);
-          }
-        };
-        availBox.appendChild(chip);
-      });
-    }
-
-    function checkAnswer() {
-      const selected = Array.from(document.getElementById('selected-words').children).map(c => c.innerText);
-      const isCorrect = JSON.stringify(selected) === JSON.stringify(currentExercise.target);
-      const msg = document.getElementById('result-message');
-
-      if (isCorrect) {
-        msg.innerText = "Отлично! Всё верно +10 XP";
-        msg.style.color = "var(--success)";
-        userProfile.xp = (userProfile.xp || 0) + 10;
-        document.getElementById('user-xp').innerText = `XP: ${userProfile.xp}`;
-        sendResult(true, selected.join(' '));
-      } else {
-        msg.innerText = "Есть ошибки, попробуй еще раз.";
-        msg.style.color = "var(--error)";
-        sendResult(false, selected.join(' '));
-      }
-    }
-
-    function speakCurrentSentence() {
-      const selected = Array.from(document.getElementById('selected-words').children).map(c => c.innerText).join(' ');
-      const textToSpeak = selected || currentExercise.target.join(' ');
-      const msg = new SpeechSynthesisUtterance(textToSpeak);
-      msg.lang = 'en-US';
-      window.speechSynthesis.speak(msg);
-    }
-
-    function sendResult(ok, answer) {
-      fetch(API_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uid: user.id,
-          name: user.first_name,
-          username: user.username || "",
-          sid: "ex1",
-          tense: "Present Simple",
-          type: "Order",
-          lvl: "A1",
-          ok: ok,
-          answer: answer
-        })
-      });
-    }
-
-    // --- Логика Карточек (Интервальное повторение) ---
-    function renderCard() {
-      if (userWords.length === 0) {
-        document.getElementById('card-word').innerText = "Слов пока нет";
-        return;
-      }
-      const card = userWords[currentCardIndex % userWords.length];
-      document.getElementById('card-word').innerText = card.w;
-      document.getElementById('card-trans').innerText = card.t;
-      document.getElementById('card-trans').classList.add('hidden');
-    }
-
-    function toggleTranslation() {
-      document.getElementById('card-trans').classList.toggle('hidden');
-    }
-
-    function answerCard(remembered) {
-      if (userWords.length === 0) return;
-      const card = userWords[currentCardIndex % userWords.length];
-      card.box = remembered ? (card.box || 0) + 1 : 0;
-      currentCardIndex++;
-      renderCard();
-      syncWords();
-    }
-
-    function addNewWord() {
-      const w = document.getElementById('new-word').value.trim();
-      const t = document.getElementById('new-trans').value.trim();
-      if (!w || !t) return;
-
-      userWords.push({ w, t, box: 0, c: 0, x: 0, added: new Date().toISOString() });
-      document.getElementById('new-word').value = '';
-      document.getElementById('new-trans').value = '';
-      renderCard();
-      syncWords();
-    }
-
-    function syncWords() {
-      fetch(API_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'words',
-          uid: user.id,
-          words: userWords
-        })
-      });
-    }
-
-    init();
-  </script>
-</body>
-</html>
+function doGet(e) {
+  const p = e.parameter || {};
+  const uid = String(p.uid || "");
+  let out = {};
+  if (p.action === "words" && uid) {
+    const rows = SS.getSheetByName("Words").getDataRange().getValues().slice(1);
+    out.words = rows.filter(r => String(r[0]) === uid)
+      .map(r => ({ w: r[1], t: r[2], box: r[3], c: r[4], x: r[5], added: r[6] }));
+  }
+  if (p.action === "profile" && uid) {
+    const rows = SS.getSheetByName("Profiles").getDataRange().getValues().slice(1);
+    const r = rows.find(x => String(x[0]) === uid);
+    if (r) out.profile = { name: r[1], lvl: r[3], goal: r[4] };
+  }
+  return ContentService.createTextOutput(JSON.stringify(out))
+    .setMimeType(ContentService.MimeType.JSON);
+}
