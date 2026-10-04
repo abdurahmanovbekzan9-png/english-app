@@ -34,11 +34,11 @@ h1{font-size:24px;margin:4px 0 14px}h2{font-size:19px;margin:20px 0 10px}p{color
 .inner{max-width:520px;margin:0 auto}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px}.stat b{font-size:24px;display:block}
 .av{width:80px;height:80px;border-radius:50%;background:var(--ac);color:#fff;font-size:34px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:6px auto 10px}
-.c{text-align:center}.big{font-size:56px;font-weight:800;color:var(--pd);margin:10px 0}
+.in{width:100%;border:2px solid var(--line);border-radius:14px;padding:13px;font:inherit;font-size:16px;margin-bottom:10px;background:#fff;color:var(--t)}.row{display:flex;justify-content:space-between;align-items:center}.c{text-align:center}.big{font-size:56px;font-weight:800;color:var(--pd);margin:10px 0}
 </style></head><body><div id="app"></div><div id="ov"></div>
 <script>
 const SHEET_ID="1o_NBtHhbU1r1NmKpcDRkcYRNEfMRQmQyqHGPIWt-GSU";
-const API_URL=""; /* ссылка Google Apps Script для записи результатов (появится на следующем шаге) */
+const API_URL="https://script.google.com/macros/s/AKfycbyzSfQkHh78EeNQYFWISRYqnAVc3moQL1ZwyQQPWGIuBoOI8rDGPsTRwjGynekOxTFO/exec"; /* ссылка Google Apps Script для записи результатов (появится на следующем шаге) */
 const tg=window.Telegram&&Telegram.WebApp; if(tg){try{tg.ready();tg.expand()}catch(e){}}
 const U=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user)||{id:"guest",first_name:"Гость"};
 const $=id=>document.getElementById(id), esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -67,6 +67,7 @@ async function load(){
  }
  const d=new Date().toDateString();if(P.last!==d){const y=new Date(Date.now()-864e5).toDateString();if(P.last!==y)P.streak=0;saveP()}
  view();
+ pullW().then(()=>{if($("nw"))words()});
 }
 function nav(){return '<div class="nav"><button class="'+(tab=="home"?"on":"")+'" onclick="tab=\'home\';view()">📚 Учиться</button><button class="'+(tab=="profile"?"on":"")+'" onclick="tab=\'profile\';view()">👤 Профиль</button></div>'}
 function view(){ $("ov").innerHTML=""; tab=="profile"?profile():home() }
@@ -74,7 +75,7 @@ function home(){
  $("app").innerHTML='<h1>Привет, '+esc(U.first_name||"друг")+'! 👋</h1><div class="pills"><span class="pill">🔥 '+P.streak+'</span><span class="pill">⭐ '+P.xp+' XP</span></div>'+
  (OFF?'<p style="font-size:12px">⚠️ Таблица недоступна ('+esc(OFF)+'). Работает встроенная база.</p>':'')+'<h2 style="margin-top:0">Упражнения</h2>'+
  '<button class="card" onclick="setup()"><span class="ic">🧩</span><span><b>Word Order</b><p>Собери предложение из облачков</p></span></button>'+
- '<div class="card off"><span class="ic">📝</span><span><b>Мои слова</b><p>Скоро: свои слова и карточки</p></span></div>'+nav();
+ '<button class="card" onclick="words()"><span class="ic">📝</span><span><b>Мои слова</b><p>Свои слова: добавляй и запоминай</p></span></button>'+nav();
 }
 function profile(){
  const acc=P.solved?Math.round(P.correct/P.solved*100):0,n=(U.first_name||"?")+" "+(U.last_name||"");
@@ -112,7 +113,7 @@ function check(){
  const it=G.list[G.i];G.chk=true;
  const ok=it.s.every((x,k)=>G.cards.find(z=>z.id==G.placed[k]).w==x[1]);
  P.solved++;if(ok){G.score++;P.correct++;P.xp+=10}else G.bad.push(it);
- const d=new Date().toDateString();if(P.last!==d){P.streak++;P.last=d}saveP();
+ tick();saveP();
  send(it,ok);game();
  const last=G.i==G.list.length-1;
  $("ov").innerHTML='<div class="sheet '+(ok?"ok":"bad")+'"><div class="inner"><b>'+(ok?"Верно! +10 XP":"Неверно")+'</b>'+(ok?'':'<p style="color:var(--t)">Правильно: <b style="display:inline;font-size:inherit;color:inherit">'+esc(it.s.map(x=>x[1]).join(" "))+'</b></p>')+'<br><button class="btn" style="'+(ok?'':'background:var(--bad);border-bottom-color:#B35A5A')+'" onclick="nx()">'+(last?"Результат":"Дальше")+'</button></div></div>';
@@ -129,5 +130,41 @@ function send(it,ok){
  const body={uid:U.id,name:((U.first_name||"")+" "+(U.last_name||"")).trim(),username:U.username||"",sid:it.id,tense:it.tense,type:it.type,lvl:it.lvl,ok:ok?1:0,answer:G.placed.map(c=>G.cards.find(z=>z.id==c).w).join(" ")};
  try{fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(body)}).catch(()=>{})}catch(e){}
 }
-load();
+let W=[],WT={},tm;
+const wkey="w_"+U.id, mast=b=>"●".repeat(Math.min(b,5))+"○".repeat(5-Math.min(b,5));
+function loadW(){try{W=JSON.parse(localStorage.getItem(wkey)||"[]")}catch(e){W=[]}}
+async function pullW(){if(!API_URL||W.length)return;try{const j=await (await fetch(API_URL+"?action=words&uid="+encodeURIComponent(U.id))).json();if(j.words&&j.words.length&&!W.length){W=j.words.map(x=>({w:String(x.w),t:String(x.t),box:+x.box||0,c:+x.c||0,x:+x.x||0,added:x.added||""}));saveW(true)}}catch(e){}}
+function saveW(local){try{localStorage.setItem(wkey,JSON.stringify(W))}catch(e){}if(local||!API_URL)return;clearTimeout(tm);tm=setTimeout(()=>{fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"words",uid:U.id,words:W})}).catch(()=>{})},800)}
+function tick(){const d=new Date().toDateString();if(P.last!==d){P.streak++;P.last=d}}
+function words(){
+ $("ov").innerHTML="";
+ $("app").innerHTML='<div class="top"><button class="x" onclick="tab=\'home\';view()">✕</button><h1 style="margin:0">Мои слова</h1></div>'+
+ '<div class="stat" style="margin-bottom:14px"><input class="in" id="nw" placeholder="Слово по-английски" autocomplete="off" autocapitalize="none"><input class="in" id="nt" placeholder="Перевод" autocomplete="off" onkeydown="if(event.key==\'Enter\')addW()"><button class="btn" onclick="addW()">Добавить</button></div>'+
+ (W.length?'<button class="btn sec" style="margin-bottom:14px" onclick="wstart()">Тренировать ('+W.length+')</button>':'<p class="c">Добавьте первое слово 👆</p>')+
+ W.map((x,i)=>'<div class="stat row" style="margin-bottom:8px"><span><b style="font-size:17px">'+esc(x.w)+'</b><p>'+esc(x.t)+' · '+mast(x.box)+'</p></span><button class="x" onclick="delW('+i+')">🗑</button></div>').join("");
+}
+function addW(){
+ const w=$("nw").value.trim(),t=$("nt").value.trim();if(!w||!t)return;
+ if(!W.some(x=>x.w.toLowerCase()==w.toLowerCase()))W.unshift({w,t,box:0,c:0,x:0,added:new Date().toISOString().slice(0,10)});
+ saveW();words();setTimeout(()=>$("nw").focus(),50);
+}
+function delW(i){W.splice(i,1);saveW();words()}
+function wstart(){const l=W.map((x,i)=>i).sort((a,b)=>(W[a].box-W[b].box)||Math.random()-.5).slice(0,10);WT={l:sh(l),i:0,sc:0,chk:false};wq()}
+function wq(){
+ const x=W[WT.l[WT.i]];WT.chk=false;$("ov").innerHTML="";
+ $("app").innerHTML='<div class="top"><button class="x" onclick="words()">✕</button><div class="bar"><i style="width:'+(WT.i/WT.l.length*100)+'%"></i></div></div><p>Переведи на английский</p><div class="ru" style="font-size:30px;margin:14px 0 20px">'+esc(x.t)+'</div>'+
+ '<input class="in" id="wa" autocomplete="off" autocapitalize="none" placeholder="Напиши по-английски" onkeydown="if(event.key==\'Enter\')wcheck()"><div class="foot"><div class="inner"><button class="btn" onclick="wcheck()">Проверить</button></div></div>';
+ setTimeout(()=>$("wa").focus(),50);
+}
+function wcheck(){
+ if(WT.chk)return;const a=$("wa").value.trim().toLowerCase();if(!a)return;
+ const x=W[WT.l[WT.i]],ok=a==x.w.trim().toLowerCase();WT.chk=true;
+ if(ok){x.c++;x.box++;WT.sc++;P.xp+=5}else{x.x++;x.box=0}
+ tick();saveP();saveW();
+ const last=WT.i==WT.l.length-1;
+ $("ov").innerHTML='<div class="sheet '+(ok?"ok":"bad")+'"><div class="inner"><b>'+(ok?"Верно! +5 XP":"Неверно")+'</b>'+(ok?'':'<p style="color:var(--t)">Правильно: <b style="display:inline;font-size:inherit;color:inherit">'+esc(x.w)+'</b></p>')+'<br><button class="btn" style="'+(ok?'':'background:var(--bad);border-bottom-color:#B35A5A')+'" onclick="wnx()">'+(last?"Результат":"Дальше")+'</button></div></div>';
+}
+function wnx(){$("ov").innerHTML="";if(WT.i<WT.l.length-1){WT.i++;wq()}else{
+ $("app").innerHTML='<div class="c" style="margin-top:12vh"><p>Тренировка завершена</p><div class="big">'+WT.sc+'/'+WT.l.length+'</div><p>+'+(WT.sc*5)+' XP</p></div><div class="foot"><div class="inner"><button class="btn" onclick="wstart()">Ещё раз</button><div style="height:8px"></div><button class="btn sec" onclick="words()">К моим словам</button></div></div>'}}
+loadW();load();
 </script></body></html>
