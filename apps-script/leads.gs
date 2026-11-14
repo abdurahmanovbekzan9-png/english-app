@@ -17,31 +17,33 @@
  *    Ссылка API_URL при этом не меняется.
  */
 function handleLead(body) {
-  var name  = String(body.name  || "").slice(0, 100);
-  var phone = String(body.phone || "").slice(0, 30);
-  var lvl   = String(body.lvl   || "").slice(0, 20);
-  var time  = String(body.time  || "").slice(0, 30);
-  var user  = String(body.username || "").slice(0, 60);
-  var uid   = String(body.uid   || "").slice(0, 30);
+  function f(k, n) { return String(body[k] || "").slice(0, n || 100); }
+  var name = f("name"), phone = f("phone", 30), fmt = f("fmt", 20), time = f("time", 20),
+      age = f("age", 20), city = f("city", 50), msg = f("msg", 500), lvl = f("lvl", 20),
+      user = f("username", 60), uid = f("uid", 30);
 
   // 1) Сохраняем в лист «Заявки» той же таблицы
   var ss = SpreadsheetApp.getActiveSpreadsheet() ||
            SpreadsheetApp.openById("1o_NBtHhbU1r1NmKpcDRkcYRNEfMRQmQyqHGPIWt-GSU");
   var sh = ss.getSheetByName("Заявки") || ss.insertSheet("Заявки");
-  if (sh.getLastRow() == 0) sh.appendRow(["Дата", "Имя", "Телефон", "Уровень", "Когда звонить", "Telegram", "ID"]);
-  sh.appendRow([new Date(), name, phone, lvl, time, user ? "@" + user : "", uid]);
+  if (sh.getLastRow() == 0) sh.appendRow(["Дата", "Имя", "Телефон", "Формат", "Когда удобно", "Возраст", "Город", "Комментарий", "Уровень в приложении", "Telegram", "ID"]);
+  sh.appendRow([new Date(), name, phone, fmt, time, age, city, msg, lvl, user ? "@" + user : "", uid]);
 
   // 2) Присылаем менеджеру в Telegram
   var props = PropertiesService.getScriptProperties();
   var token = props.getProperty("BOT_TOKEN");
   var chat  = props.getProperty("LEADS_CHAT_ID");
   if (token && chat) {
-    var text = "🔔 Новая заявка\n\n" +
+    var text = "🔔 Заявка на диагностику (Mini App)\n\n" +
       "👤 " + name + "\n" +
       "📞 " + phone + "\n" +
-      (lvl  ? "🎯 Уровень: " + lvl + "\n" : "") +
-      (time ? "🕐 Позвонить: " + time + "\n" : "") +
-      (user ? "💬 @" + user + "\n" : (uid && uid != "guest" ? "💬 tg://user?id=" + uid + "\n" : ""));
+      "🏫 Формат: " + fmt + "\n" +
+      "🕐 Когда: " + time + "\n" +
+      "🎂 Возраст: " + age + "\n" +
+      "📍 Город: " + city + "\n" +
+      (msg ? "💬 " + msg + "\n" : "") +
+      (lvl ? "🎯 Уровень в приложении: " + lvl + "\n" : "") +
+      (user ? "✈️ @" + user + "\n" : "");
     UrlFetchApp.fetch("https://api.telegram.org/bot" + token + "/sendMessage", {
       method: "post",
       contentType: "application/json",
