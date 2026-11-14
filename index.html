@@ -59,6 +59,12 @@ h1{font-size:24px;margin:4px 0 14px}h2{font-size:19px;margin:20px 0 10px}p{color
 .lf .go:disabled{opacity:.5;cursor:default}.lf .go:active:not(:disabled){transform:scale(.98)}
 .lf .pp{font-size:12px;color:var(--ls);margin:12px 0 0}.lf .pp a{color:inherit}
 .lf .x{color:var(--ls)}
+.wl{min-height:calc(100vh - 140px);display:flex;flex-direction:column;justify-content:center}.wl .lg{width:64px;height:64px;border-radius:50%;background:#EDBE78;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 0 18px}
+.wl .ey{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#C79A4E;font-weight:700;margin:0 0 8px}.wl h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+.wc{display:flex;gap:14px;align-items:center;width:100%;text-align:left;font:inherit;color:var(--t);background:#fff;border:1px solid #E3E1DC;border-radius:20px;padding:18px;margin-top:12px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.04)}
+.wc:active{transform:scale(.98)}.wc .ic{flex:none;width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;background:#EAF0EA}.wc b{display:block;font-size:18px}.wc p{margin:3px 0 0;font-size:14px}.wc .ar{margin-left:auto;font-size:20px;color:#C79A4E}
+.wc.gold{background:#EDBE78;border-color:#EDBE78}.wc.gold .ic{background:rgba(255,255,255,.45)}.wc.gold p{color:#5A4520}.wc.gold .ar{color:#1E1E1E}
+@media (prefers-color-scheme:dark){body.dkw{background:#171716}body.dkw .wl h1{color:#F2F0EC}body.dkw .wc:not(.gold){background:#1F1F1E;border-color:#3A3936;color:#F2F0EC}body.dkw .wc:not(.gold) .ic{background:#2A2928}}
 </style></head><body><div id="app"></div><div id="ov"></div>
 <script src="books.js"></script>
 <script>
@@ -91,7 +97,7 @@ async function load(){
   if(!Object.keys(TN).length)TN=FALLBACK_TN;
  }
  const d=new Date().toDateString();if(P.last!==d){const y=new Date(Date.now()-864e5).toDateString();if(P.last!==y)P.streak=0;saveP()}
- await pullProfile();P.reg?view():reg();
+ await pullProfile();(P.reg||P.role=="student")?enterStudent():welcome();
  pullW().then(()=>{if($("nw"))words()});
 }
 function nav(){const t=[["home","🏠","Home","tab='home';view()"],["books","📚","Books","books()"],["wo","🧩","Word Order","setup()"],["vo","🔤","Vocabulary","words()"],["profile","👤","Profile","tab='profile';view()"]];return '<div class="nav">'+t.map(x=>'<button class="'+(tab==x[0]?"on":"")+'" onclick="'+x[3]+'">'+x[1]+'<br><small>'+x[2]+'</small></button>').join("")+'</div>'+'<button class="fab" onclick="lead()" aria-label="Быстрая заявка" title="Записаться на диагностику"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></button>'}
@@ -338,6 +344,14 @@ function qend(){
  BP.last={b:B.id,c:Math.min(QZ.c+1,B.ch.length-1),i:0};saveBP();const nx=QZ.c+1<B.ch.length;
  $("app").innerHTML='<div class="c" style="margin-top:8vh"><p>Глава пройдена</p><div class="big">'+QZ.s+'/'+n+'</div><p>'+(first?"+"+xp+" XP":"Повтор: XP начисляется только за первое прохождение")+'</p></div><div class="foot"><div class="inner">'+(nx?'<button class="btn" onclick="read(\''+B.id+'\','+(QZ.c+1)+',0)">Следующая глава</button><div style="height:8px"></div>':'')+'<button class="btn sec" onclick="bookPage(\''+B.id+'\')">К книге</button></div></div>';
 }
+/* ===== Экран выбора при входе ===== */
+function welcome(){
+ tab="welcome";$("ov").innerHTML="";const dk=leadDark();document.body.classList.toggle("dkw",dk);if(dk)document.body.style.background="#171716";
+ $("app").innerHTML='<div class="wl"><div class="lg">🇬🇧</div><p class="ey">Orient English Express</p><h1>Добро пожаловать! 👋</h1><p>Выберите, что вам нужно:</p>'+
+ '<button class="wc" onclick="enterStudent(1)"><span class="ic">🎓</span><span><b>Я студент</b><p>Книги, слова и упражнения</p></span><span class="ar">→</span></button>'+
+ '<button class="wc gold" onclick="lead()"><span class="ic">📞</span><span><b>Быстрая заявка</b><p>Бесплатная диагностика с завучем</p></span><span class="ar">↗</span></button></div>';
+}
+function enterStudent(first){document.body.classList.remove("dkw");document.body.style.background="";if(first){P.role="student";saveP()}P.reg?view():reg()}
 /* ===== Быстрая заявка (как форма на orientenglish.com/#booking) ===== */
 const CITIES=["Ташкент","Самарканд","Бухара","Андижан","Наманган","Фергана","Другой город"], POLICY_URL="https://orientenglish.com/";
 let LD=null;
