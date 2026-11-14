@@ -113,7 +113,8 @@ async function load(){
   if(!Object.keys(TN).length)TN=FALLBACK_TN;
  }
  const d=new Date().toDateString();if(P.last!==d){const y=new Date(Date.now()-864e5).toDateString();if(P.last!==y)P.streak=0;saveP()}
- await pullProfile();P.role=="student"?enterStudent():welcome();
+ await pullProfile();if(P.role!="student"){const r=await cloudGet("role");if(r=="student"){P.role=r;saveP()}}
+ (P.role=="student"||P.reg)?enterStudent(1):welcome();
  pullW().then(()=>{if($("nw"))words()});
 }
 function nav(){syncBack();const t=[["home","home","Главная","tab='home';view()"],["books","books","Книги","books()"],["wo","wo","Word Order","setup()"],["vo","vo","Слова","words()"],["profile","user","Профиль","tab='profile';view()"]];return '<div class="nav">'+t.map(x=>'<button class="'+(tab==x[0]?"on":"")+'" onclick="'+x[3]+'">'+I(x[1])+'<small>'+x[2]+'</small></button>').join("")+'</div>'+'<button class="fab" onclick="lead()" aria-label="Быстрая заявка" title="Записаться на диагностику"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></button>'}
@@ -367,7 +368,11 @@ function welcome(){
  '<button class="wc" onclick="enterStudent(1)"><span class="ic">'+I("cap")+'</span><span><b>Я студент</b><p>Книги, слова и упражнения</p></span><span class="ar">'+I("right")+'</span></button>'+
  '<button class="wc gold" onclick="lead()"><span class="ic">'+I("phone")+'</span><span><b>Быстрая заявка</b><p>Бесплатная диагностика с завучем</p></span><span class="ar">'+I("up")+'</span></button></div>';
 }
-function enterStudent(first){if(first){P.role="student";saveP()}tab="home";P.reg?view():reg()}
+function enterStudent(first){if(first&&P.role!="student"){P.role="student";saveP();cloudSet("role","student")}else if(first)cloudSet("role","student");tab="home";P.reg?view():reg()}
+/* Telegram CloudStorage: выбор «Я студент» хранится в аккаунте Telegram, а не только в браузере */
+function cloudOk(){try{return !!(tg&&tg.CloudStorage&&tg.isVersionAtLeast&&tg.isVersionAtLeast("6.9"))}catch(e){return false}}
+function cloudGet(k){return new Promise(res=>{if(!cloudOk())return res("");const t=setTimeout(()=>res(""),1500);try{tg.CloudStorage.getItem(k,(e,v)=>{clearTimeout(t);res(e?"":(v||""))})}catch(e){clearTimeout(t);res("")}})}
+function cloudSet(k,v){try{cloudOk()&&tg.CloudStorage.setItem(k,v)}catch(e){}}
 function goWelcome(){welcome()}
 /* ===== Быстрая заявка (как форма на orientenglish.com/#booking) ===== */
 const CITIES=["Ташкент","Самарканд","Бухара","Андижан","Наманган","Фергана","Другой город"], POLICY_URL="https://orientenglish.com/";
