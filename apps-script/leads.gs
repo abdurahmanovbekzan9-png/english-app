@@ -13,6 +13,12 @@
  *      LEADS_CHAT_ID — куда присылать заявки: ID менеджера или группы
  *                      (у группы ID начинается с минуса, например -1001234567890;
  *                       бот должен быть добавлен в эту группу)
+ *    Для amoCRM (необязательно) добавьте ещё:
+ *      AMO_DOMAIN     — адрес вашей amoCRM без https://, например orientenglish.amocrm.ru
+ *      AMO_TOKEN      — долгосрочный токен (amoCRM → amoМаркет → ⋮ → «Создать интеграцию»
+ *                       → «Внешняя интеграция» → после сохранения вкладка «Ключи и доступы»
+ *                       → «Долгосрочный токен» → выберите срок → скопируйте)
+ *      AMO_PIPELINE_ID — (необязательно) ID воронки, если сделки нужны не в основной воронке
  * 5. «Начать развёртывание» → «Управление развёртываниями» → карандаш → Версия: «Новая версия» → «Развернуть».
  *    Ссылка API_URL при этом не меняется.
  */
@@ -51,6 +57,59 @@ function handleLead(body) {
       muteHttpExceptions: true
     });
   }
+  // 3) Создаём сделку + контакт в amoCRM
+  try {
+    sendToAmo({ name: name, phone: phone, fmt: fmt, time: time, age: age, city: city, msg: msg, lvl: lvl, user: user });
+  } catch (err) {
+    console.error("amoCRM: " + err);
+  }
+
   return ContentService.createTextOutput(JSON.stringify({ ok: true }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function sendToAmo(d) {
+  var props  = PropertiesService.getScriptProperties();
+  var domain = String(props.getProperty("AMO_DOMAIN") || "").replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+  var token  = props.getProperty("AMO_TOKEN");
+  if (!domain || !token) return;
+  var base = "https://" + domain + "/api/v4";
+  var headers = { Authorization: "Bearer " + token };
+
+  var lead = {
+    name: "Диагностика (Mini App): " + d.name,
+    _embedded: {
+      tags: [{ name: "Mini App" }, { name: "Диагностика" }],
+      contacts: [{
+        first_name: d.name,
+        custom_fields_values: [{ field_code: "PHONE", values: [{ value: d.phone, enum_code: "MOB" }] }]
+      }]
+    }
+  };
+  var pipeline = Number(props.getProperty("AMO_PIPELINE_ID"));
+  if (pipeline) lead.pipeline_id = pipeline;
+
+  var res = UrlFetchApp.fetch(base + "/leads/complex", {
+    method: "post", contentType: "application/json", headers: headers,
+    payload: JSON.stringify([lead]), muteHttpExceptions: true
+  });
+  if (res.getResponseCode() >= 300) throw new Error(res.getResponseCode() + " " + res.getContentText().slice(0, 300));
+  var created = JSON.parse(res.getContentText());
+  var leadId = created && created[0] && created[0].id;
+  if (!leadId) return;
+
+  // Все ответы из анкеты — примечанием в сделке
+  var note = "Заявка из Telegram Mini App\n" +
+    "Формат: " + d.fmt + "\nКогда удобно: " + d.time + "\nВозраст: " + d.age + "\nГород: " + d.city +
+    (d.msg ? "\nКомментарий: " + d.msg : "") + (d.lvl ? "\nУровень в приложении: " + d.lvl : "") +
+    (d.user ? "\nTelegram: @" + d.user : "");
+  UrlFetchApp.fetch(base + "/leads/" + leadId + "/notes", {
+    method: "post", contentType: "application/json", headers: headers,
+    payload: JSON.stringify([{ note_type: "common", params: { text: note } }]), muteHttpExceptions: true
+  });
+}
+
+/** Для проверки: выберите эту функцию вверху редактора и нажмите «Выполнить». В amoCRM появится тестовая сделка. */
+function testAmo() {
+  sendToAmo({ name: "Тест Mini App", phone: "+998900000000", fmt: "Онлайн", time: "Вечером", age: "25–34", city: "Ташкент", msg: "Тестовая заявка, можно удалить", lvl: "", user: "" });
 }
