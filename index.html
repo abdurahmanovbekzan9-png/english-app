@@ -87,6 +87,8 @@ html.hb,html.hb body{background:#141414}
 .wl .btn{margin-top:10px;font-size:16px}.wl .btn.sec{color:#F2F0EC;border-color:rgba(242,240,236,.55)}
 .wl .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}.wl .stats div{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);border-radius:18px;padding:14px}.wl .stats b{display:block;font-size:22px;color:#E8B86D}.wl .stats span{font-size:13px;color:#B9B4AC}
 .tag{display:inline-block;background:var(--soft);color:var(--pd);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;margin-bottom:6px}
+.lgn .msg{border-radius:18px;padding:14px 16px;margin:18px 0 0;font-size:15px;line-height:1.4}.lgn .msg.bad{background:rgba(217,103,95,.12);border:1px solid rgba(217,103,95,.4);color:#F2C9C5}.lgn .msg.ok{background:rgba(78,154,106,.14);border:1px solid rgba(78,154,106,.45);color:#CFE8D7}.lgn .msg.inf{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#D9D5CE}
+.lgn .steps{margin:22px 0 6px;display:grid;gap:12px}.lgn .steps div{display:flex;gap:12px;align-items:center;color:#D9D5CE;font-size:15px}.lgn .steps span{flex:none;width:30px;height:30px;border-radius:50%;background:rgba(232,184,109,.15);color:#E8B86D;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
 </style></head><body><div id="app"></div><div id="ov"></div>
 <script src="books.js"></script>
 <script>
@@ -130,8 +132,8 @@ async function load(){
   if(!Object.keys(TN).length)TN=FALLBACK_TN;
  }
  const d=new Date().toDateString();if(P.last!==d){const y=new Date(Date.now()-864e5).toDateString();if(P.last!==y)P.streak=0;saveP()}
- await pullProfile();if(P.role!="student"){const r=await cloudGet("role");if(r=="student"){P.role=r;saveP()}}
- (P.role=="student"||P.reg)?enterStudent(1):welcome();
+ await pullProfile();if(!P.verified){const v=await cloudGet("verified");if(v){P.verified=v;saveP()}}
+ P.verified?(enterStudent(1),recheckStudent()):welcome();
  if(wantLead())lead();
  pullW().then(()=>{if($("nw"))words()});
 }
@@ -379,13 +381,52 @@ function qend(){
  BP.last={b:B.id,c:Math.min(QZ.c+1,B.ch.length-1),i:0};saveBP();const nx=QZ.c+1<B.ch.length;
  $("app").innerHTML='<div class="c" style="margin-top:8vh"><p>Глава пройдена</p><div class="big">'+QZ.s+'/'+n+'</div><p>'+(first?"+"+xp+" XP":"Повтор: XP начисляется только за первое прохождение")+'</p></div><div class="foot"><div class="inner">'+(nx?'<button class="btn" onclick="read(\''+B.id+'\','+(QZ.c+1)+',0)">Следующая глава</button><div style="height:8px"></div>':'')+'<button class="btn sec" onclick="bookPage(\''+B.id+'\')">К книге</button></div></div>';
 }
+/* ===== Вход для студентов по номеру телефона ===== */
+const PHONE_OFFICE="+998 78 555 08 07";
+function studentLogin(st,info){
+ if(P.verified&&!st)return enterStudent(1);
+ tab="welcome";$("ov").innerHTML="";syncBack();document.documentElement.classList.add("hb");
+ const can=!!(tg&&tg.requestContact&&tg.isVersionAtLeast&&tg.isVersionAtLeast("6.9"));
+ let msg="";
+ if(st=="wait")msg='<div class="msg inf">Проверяю номер…</div>';
+ else if(st=="no")msg='<div class="msg bad">Номер <b>'+esc(info||"")+'</b> не найден в списке студентов Orient English Express.<br>Если вы учитесь у нас, позвоните: <b>'+PHONE_OFFICE+'</b>.</div>';
+ else if(st=="err")msg='<div class="msg bad">Не получилось проверить номер. Проверьте интернет и попробуйте ещё раз.</div>';
+ else if(st=="deny")msg='<div class="msg inf">Чтобы войти, нужно поделиться номером. Мы используем его только для проверки.</div>';
+ else if(st=="revoked")msg='<div class="msg inf">Доступ к приложению закрыт: вашего номера больше нет в списке студентов. Если это ошибка, позвоните: <b>'+PHONE_OFFICE+'</b>.</div>';
+ if(!can&&!st)msg='<div class="msg bad">Обновите Telegram до последней версии, чтобы войти по номеру.</div>';
+ $("app").innerHTML='<div class="wl lgn"><div class="top2"><button class="x" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:#F2F0EC" onclick="welcome()" aria-label="Назад">'+I("back")+'</button>'+logo()+'Orient English Express</div>'+
+ '<p class="ey">Только для студентов</p><h1>Вход<em>для студентов.</em></h1><p>Приложение с книгами, словами и упражнениями доступно только ученикам Orient English Express.</p>'+
+ '<div class="steps"><div><span>1</span>Нажмите «Подтвердить номер»</div><div><span>2</span>Telegram отправит ваш номер одной кнопкой</div><div><span>3</span>Если вы в списке студентов, сразу войдёте. Больше вход спрашивать не будем</div></div>'+msg+
+ (st=="wait"?'':'<button class="btn" style="margin-top:22px" '+(can?'':'disabled')+' onclick="verifyPhone()">'+I("phone")+(st=="no"||st=="err"?' Проверить ещё раз':' Подтвердить номер')+'</button>')+
+ (st=="no"||st=="revoked"?'<button class="btn sec" onclick="lead()">Не студент? Оставить заявку '+I("up")+'</button>':'')+'</div>';
+}
+function verifyPhone(){
+ try{tg.requestContact((ok,res)=>{
+  if(!ok||!res||!res.response){studentLogin("deny");return}
+  const c=res.responseUnsafe&&res.responseUnsafe.contact,ph=c&&c.phone_number?((String(c.phone_number).startsWith("+")?"":"+")+c.phone_number):"";
+  studentLogin("wait");checkStudent({action:"verify",init:tg.initData||"",contact:res.response}).then(j=>{
+   if(j&&j.ok){P.verified=j.phone||ph||"1";if(j.name&&!(P.reg&&P.reg.name)){P.reg=Object.assign({lvl:"",goal:""},P.reg||{},{name:j.name})}saveP();cloudSet("verified",P.verified);try{tg.HapticFeedback&&tg.HapticFeedback.notificationOccurred("success")}catch(e){}enterStudent(1)}
+   else if(j&&j.ok===false)studentLogin("no",j.phone||ph);
+   else studentLogin("err");
+  })})}catch(e){studentLogin("err")}
+}
+async function checkStudent(body){
+ if(!API_URL)return null;
+ try{const r=await Promise.race([fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(body)}),new Promise((_,rj)=>setTimeout(()=>rj(0),15000))]);return await r.json()}catch(e){return null}
+}
+/* Повторная проверка в фоне: если менеджер удалил студента из списка, доступ закрывается */
+async function recheckStudent(){
+ if(!tg||!tg.initData)return;
+ const j=await checkStudent({action:"verify",init:tg.initData});
+ if(j&&j.ok===false&&j.reason=="not_found"){P.verified="";saveP();cloudSet("verified","");studentLogin("revoked")}
+}
 /* ===== Экран выбора при входе ===== */
 function welcome(){
  tab="welcome";$("ov").innerHTML="";syncBack();document.documentElement.classList.add("hb");try{tg&&tg.setHeaderColor&&tg.setHeaderColor("#141414");tg&&tg.setBackgroundColor&&tg.setBackgroundColor("#141414")}catch(e){}
  $("app").innerHTML='<div class="wl"><div class="top2">'+logo()+'Orient English Express</div><p class="ey">Английский для взрослых</p><h1>Английский<em>за 30 дней.</em></h1><p class="lead2">Для взрослых, которым важен результат.</p><p>Научим говорить, понимать, читать и грамотно писать. Без учебников и домашних заданий.</p>'+
  '<div class="gt"><span class="sh">'+I("shield")+'</span><span><small>Официальная гарантия по договору</small><b>С вас — только посещение занятий. С нас — результат. <em>Или вернём 100% оплаты.</em></b></span></div>'+
  '<button class="btn" onclick="lead()">Записаться на бесплатную диагностику '+I("up")+'</button>'+
- '<button class="btn sec" onclick="enterStudent(1)">'+I("cap")+' Я студент — войти в приложение</button>'+
+ '<button class="btn sec" onclick="studentLogin()">'+I("cap")+' Я студент — войти</button>'+
  '<div class="stats"><div><b>8 000+</b><span>выпускников</span></div><div><b>24/6</b><span>занятия в удобное время</span></div></div></div>';
 }
 function enterStudent(first){document.documentElement.classList.remove("hb");applyTheme();if(first&&P.role!="student"){P.role="student";saveP();cloudSet("role","student")}else if(first)cloudSet("role","student");tab="home";P.reg?view():reg()}
