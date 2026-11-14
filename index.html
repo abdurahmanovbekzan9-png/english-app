@@ -2,44 +2,52 @@
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>English Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{--bg:#F7F8F5;--card:#fff;--p:#6B8F71;--pd:#52705A;--t:#27302A;--s:#7A827C;--ok:#79A88A;--bad:#D98282;--ac:#D9B86C;--line:#E4E8E2}
+:root{--bg:#F4F1EC;--card:#fff;--p:#E8B86D;--pd:#B8873A;--t:#1E1E1E;--s:#6F6B66;--ok:#4E9A6A;--bad:#D9675F;--ac:#E8B86D;--line:#E7E2DA;--soft:#F7EEDD;--okbg:#E6F2EA;--badbg:#FBE7E5;--hl:#F6E3B8;--dash:#D8CFC2;--slot:#FAF7F2;--nav:#1C1C1B;--navt:#9A968F;--dis:#DED8CF}
+html.dk{--bg:#141414;--card:#1F1F1E;--pd:#E8B86D;--t:#F2F0EC;--s:#A19E98;--line:#33322F;--soft:#33291A;--okbg:#1C3324;--badbg:#3A1F1D;--hl:#5A4520;--dash:#4A4741;--slot:#232321;--nav:#0B0B0B;--dis:#3A3936}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--t);font-family:-apple-system,"Segoe UI",Roboto,sans-serif}
-#app{max-width:520px;margin:0 auto;min-height:100vh;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 90px)}
-h1{font-size:24px;margin:4px 0 14px}h2{font-size:19px;margin:20px 0 10px}p{color:var(--s);margin:4px 0}
-.pills{display:flex;gap:8px;margin:12px 0 18px}.pill{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:7px 12px;font-weight:700;font-size:14px}
-.card{background:var(--card);border:2px solid var(--line);border-bottom-width:4px;border-radius:18px;padding:16px;margin-bottom:12px;display:flex;gap:14px;align-items:center;cursor:pointer;width:100%;text-align:left;color:var(--t);font:inherit}
-.card .ic{font-size:30px;width:52px;height:52px;border-radius:14px;background:#EAF0EA;display:flex;align-items:center;justify-content:center}
-.card b{display:block;font-size:17px}.card.off{opacity:.55;cursor:default}
-.btn{display:block;width:100%;border:0;border-radius:16px;background:var(--p);color:#fff;font-weight:800;font-size:16px;letter-spacing:.5px;text-transform:uppercase;padding:15px;border-bottom:4px solid var(--pd);cursor:pointer}
-.btn:active{transform:translateY(2px);border-bottom-width:2px}.btn.sec{background:var(--card);color:var(--pd);border:2px solid var(--line);border-bottom-width:4px}
-.btn:disabled{background:#CDD3CD;border-bottom-color:#B7BFB7;cursor:default}
-.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:2px solid var(--line);border-bottom-width:4px;background:var(--card);border-radius:14px;padding:9px 13px;font:inherit;font-weight:600;color:var(--t);cursor:pointer}
-.chip.on{border-color:var(--p);background:#EAF0EA;color:var(--pd)}
-.nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--line);display:flex;justify-content:center;gap:10px;padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 8px)}
-.nav button{flex:1;max-width:200px;border:0;background:none;font:inherit;font-weight:700;color:var(--s);padding:8px;border-radius:12px;cursor:pointer}.nav button.on{background:#EAF0EA;color:var(--pd)}
-.top{display:flex;align-items:center;gap:12px;margin-bottom:22px}.x{border:0;background:none;font-size:24px;color:var(--s);cursor:pointer}
-.bar{flex:1;height:14px;background:var(--line);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--p);border-radius:9px;transition:width .3s}
+html,body{margin:0;background:var(--bg);color:var(--t);font-family:"Manrope",-apple-system,"Segoe UI",Roboto,sans-serif}
+svg.i{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+#app{max-width:520px;margin:0 auto;min-height:100vh;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 110px)}
+h1{font-size:26px;font-weight:800;letter-spacing:-.3px;margin:4px 0 14px}h2{font-size:18px;font-weight:700;margin:22px 0 10px}p{color:var(--s);margin:4px 0}
+.hd{display:flex;align-items:center;gap:10px;margin-bottom:16px}.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px}.lg{width:34px;height:34px;border-radius:50%;background:var(--p);color:#1E1E1E;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.pills{display:flex;gap:8px;margin:12px 0 18px}.pill{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px}.pill svg.i{width:18px;height:18px;color:var(--pd)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:12px;display:flex;gap:14px;align-items:center;cursor:pointer;width:100%;text-align:left;color:var(--t);font:inherit;box-shadow:0 2px 10px rgba(0,0,0,.03);transition:transform .1s}
+.card:active{transform:scale(.985)}
+.card .ic{flex:none;font-size:22px;font-weight:800;width:50px;height:50px;border-radius:50%;background:var(--soft);color:var(--pd);display:flex;align-items:center;justify-content:center}.card .ic svg.i{width:24px;height:24px}
+.card b{display:block;font-size:17px;font-weight:700}.card.off{opacity:.55;cursor:default}
+.card.gold{background:var(--nav);border-color:var(--nav);color:#F2F0EC}.card.gold p{color:#B9B4AC}.card.gold .ic{background:var(--p);color:#1E1E1E}
+.card .go2{margin-left:auto;color:var(--pd)}.card.gold .go2{color:var(--p)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:999px;background:var(--p);color:#1E1E1E;font:inherit;font-weight:700;font-size:16px;padding:16px;cursor:pointer;box-shadow:0 8px 20px rgba(232,184,109,.32)}
+.btn:active{transform:scale(.98)}.btn.sec{background:transparent;color:var(--t);border:1.5px solid var(--t);box-shadow:none;padding:14.5px}
+.btn:disabled{background:var(--dis);color:var(--s);border-color:var(--dis);box-shadow:none;cursor:default}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:10px 15px;font:inherit;font-weight:600;color:var(--t);cursor:pointer}
+.chip.on{border-color:var(--p);background:var(--p);color:#1E1E1E}.chip.on small{color:#5A4520!important}
+.nav{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);max-width:496px;margin:0 auto;background:var(--nav);border-radius:24px;display:flex;gap:2px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:4}
+.nav button{flex:1;border:0;background:none;font:inherit;color:var(--navt);padding:8px 2px 6px;border-radius:18px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}.nav button.on{background:rgba(232,184,109,.16);color:var(--p)}
+.nav small{font-size:10.5px;font-weight:700;white-space:nowrap}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:22px}.x{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--t);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0}.x svg.i{width:20px;height:20px}
+.bar{flex:1;height:10px;background:var(--line);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--p);border-radius:9px;transition:width .3s}
 .ru{font-size:20px;font-weight:700;margin:6px 0 4px}
 .slots{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
-.slot{min-width:92px;min-height:58px;padding:8px 14px;border:2px dashed #B7C4B8;border-radius:22px;background:#EFF3EE;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;font-weight:600}
-.slot small{color:#9AA59B;font-weight:500;font-size:12px}.slot.full{border:2px solid var(--line);border-bottom-width:4px;background:var(--card)}
-.slot.ok{border-color:var(--ok);background:#E7F1EA}.slot.bad{border-color:var(--bad);background:#FAEAEA}
-.pool{display:flex;flex-wrap:wrap;gap:10px;padding-top:20px;border-top:2px solid var(--line);min-height:70px}
-.sheet{position:fixed;left:0;right:0;bottom:0;padding:18px 16px calc(env(safe-area-inset-bottom,0px) + 16px);border-radius:20px 20px 0 0}
-.sheet.ok{background:#E3EFE7}.sheet.bad{background:#F8E4E4}.sheet b{display:block;font-size:18px;margin-bottom:4px}.sheet.ok b{color:var(--pd)}.sheet.bad b{color:#B35A5A}
-.foot{position:fixed;left:0;right:0;bottom:0;padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 14px);background:var(--bg);border-top:2px solid var(--line)}
+.slot{min-width:92px;min-height:58px;padding:8px 14px;border:1.5px dashed var(--dash);border-radius:22px;background:var(--slot);display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;font-weight:600}
+.slot small{color:var(--s);font-weight:500;font-size:12px}.slot.full{border:1px solid var(--line);background:var(--card)}
+.slot.ok{border-color:var(--ok);background:var(--okbg)}.slot.bad{border-color:var(--bad);background:var(--badbg)}
+.pool{display:flex;flex-wrap:wrap;gap:10px;padding-top:20px;border-top:1px solid var(--line);min-height:70px}
+.sheet{position:fixed;left:0;right:0;bottom:0;padding:20px 16px calc(env(safe-area-inset-bottom,0px) + 16px);border-radius:24px 24px 0 0;z-index:6}
+.sheet.ok{background:var(--okbg)}.sheet.bad{background:var(--badbg)}.sheet b{display:block;font-size:18px;margin-bottom:4px}.sheet.ok b{color:var(--ok)}.sheet.bad b{color:var(--bad)}
+.foot{position:fixed;left:0;right:0;bottom:0;padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 14px);background:var(--bg);border-top:1px solid var(--line);z-index:4}
 .inner{max-width:520px;margin:0 auto}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px}.stat b{font-size:24px;display:block}
-.av{width:80px;height:80px;border-radius:50%;background:var(--ac);color:#fff;font-size:34px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:6px auto 10px}
-.in{width:100%;border:2px solid var(--line);border-radius:14px;padding:13px;font:inherit;font-size:16px;margin-bottom:10px;background:#fff;color:var(--t)}.row{display:flex;justify-content:space-between;align-items:center}.fcard{background:#fff;border:2px solid var(--line);border-bottom-width:5px;border-radius:24px;min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;cursor:pointer;margin:10px 0 90px}.tile{min-height:64px}.tile.on{border-color:var(--p);background:#EAF0EA}.tile.bad{border-color:var(--bad);background:#FAEAEA}.tile.done{visibility:hidden}.c{text-align:center}.big{font-size:56px;font-weight:800;color:var(--pd);margin:10px 0}
-.nav{gap:2px;padding-left:6px;padding-right:6px}.nav button{padding:6px 2px;font-size:18px;line-height:1.15;max-width:none}.nav small{font-size:10px;font-weight:700;white-space:nowrap}
-.rd{font-size:22px;line-height:1.7;color:var(--t);margin:18px 0 10px}.w{border-bottom:2px dotted #B7C4B8;cursor:pointer;border-radius:4px}.w.sel{background:#F1E3B8}
-.sheet.pop{background:#fff;border-top:2px solid var(--line);box-shadow:0 -6px 24px rgba(0,0,0,.12)}.sheet.pop p{margin:2px 0 10px}
-.bk{align-items:flex-start;flex-wrap:wrap}.bk .bar{height:8px;flex:none;width:100%;margin-top:8px}.lv{display:inline-block;font-size:12px;font-weight:800;background:#EAF0EA;color:var(--pd);border-radius:8px;padding:2px 8px;margin-left:6px}
-.fab{position:fixed;right:max(16px,calc(50% - 244px));bottom:calc(env(safe-area-inset-bottom,0px) + 82px);width:58px;height:58px;border-radius:50%;border:0;background:#EDBE78;color:#1E1E1E;box-shadow:0 8px 22px rgba(160,120,50,.35);cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}.stat b{font-size:24px;display:flex;align-items:center;gap:6px}.stat b svg.i{color:var(--pd)}
+.av{width:80px;height:80px;border-radius:50%;background:var(--p);color:#1E1E1E;font-size:34px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:6px auto 10px}
+.in{width:100%;border:1px solid var(--line);border-radius:14px;padding:14px;font:inherit;font-size:16px;margin-bottom:10px;background:var(--card);color:var(--t);outline:none}.in:focus{border-color:var(--p)}.row{display:flex;justify-content:space-between;align-items:center;gap:8px}.fcard{background:var(--card);border:1px solid var(--line);border-radius:24px;min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;cursor:pointer;margin:10px 0 90px;box-shadow:0 4px 16px rgba(0,0,0,.04)}.tile{min-height:64px}.tile.on{border-color:var(--p);background:var(--soft)}.tile.bad{border-color:var(--bad);background:var(--badbg)}.tile.done{visibility:hidden}.c{text-align:center}.big{font-size:56px;font-weight:800;color:var(--pd);margin:10px 0}
+.rd{font-size:22px;line-height:1.7;color:var(--t);margin:18px 0 10px}.w{border-bottom:2px dotted var(--dash);cursor:pointer;border-radius:4px}.w.sel{background:var(--hl)}
+.sheet.pop{background:var(--card);border-top:1px solid var(--line);box-shadow:0 -6px 24px rgba(0,0,0,.12)}.sheet.pop p{margin:2px 0 10px}
+.bk{align-items:flex-start;flex-wrap:wrap}.bk .bar{height:6px;flex:none;width:100%;margin-top:8px}.lv{display:inline-block;font-size:12px;font-weight:700;background:var(--soft);color:var(--pd);border-radius:999px;padding:3px 10px;margin-left:6px;vertical-align:middle}
+.acts{display:flex;gap:6px}
+.fab{position:fixed;right:max(16px,calc(50% - 244px));bottom:calc(env(safe-area-inset-bottom,0px) + 96px);width:58px;height:58px;border-radius:50%;border:0;background:var(--p);color:#1E1E1E;box-shadow:0 8px 22px rgba(160,120,50,.35);cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center}
 .fab:active{transform:scale(.94)}.fab svg{width:24px;height:24px}
 .bd{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9}
 .lf{--lbg:#fff;--lt:#1E1E1E;--ls:#6F6F6F;--ll:#E3E1DC;--lin:#fff;--lg:#EDBE78;--lgt:#1E1E1E;--lon:#FBF3E6;position:fixed;left:0;right:0;bottom:0;z-index:10;max-height:92vh;overflow-y:auto;background:var(--lbg);color:var(--lt);border-radius:24px 24px 0 0;padding:20px 16px calc(env(safe-area-inset-bottom,0px) + 18px);box-shadow:0 -8px 30px rgba(0,0,0,.15)}
@@ -59,18 +67,26 @@ h1{font-size:24px;margin:4px 0 14px}h2{font-size:19px;margin:20px 0 10px}p{color
 .lf .go:disabled{opacity:.5;cursor:default}.lf .go:active:not(:disabled){transform:scale(.98)}
 .lf .pp{font-size:12px;color:var(--ls);margin:12px 0 0}.lf .pp a{color:inherit}
 .lf .x{color:var(--ls)}
-.wl{min-height:calc(100vh - 140px);display:flex;flex-direction:column;justify-content:center}.wl .lg{width:64px;height:64px;border-radius:50%;background:#EDBE78;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 0 18px}
-.wl .ey{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#C79A4E;font-weight:700;margin:0 0 8px}.wl h1{font-size:28px;line-height:1.2;margin:0 0 8px}
-.wc{display:flex;gap:14px;align-items:center;width:100%;text-align:left;font:inherit;color:var(--t);background:#fff;border:1px solid #E3E1DC;border-radius:20px;padding:18px;margin-top:12px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.04)}
-.wc:active{transform:scale(.98)}.wc .ic{flex:none;width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;background:#EAF0EA}.wc b{display:block;font-size:18px}.wc p{margin:3px 0 0;font-size:14px}.wc .ar{margin-left:auto;font-size:20px;color:#C79A4E}
-.wc.gold{background:#EDBE78;border-color:#EDBE78}.wc.gold .ic{background:rgba(255,255,255,.45)}.wc.gold p{color:#5A4520}.wc.gold .ar{color:#1E1E1E}
-@media (prefers-color-scheme:dark){body.dkw{background:#171716}body.dkw .wl h1{color:#F2F0EC}body.dkw .wc:not(.gold){background:#1F1F1E;border-color:#3A3936;color:#F2F0EC}body.dkw .wc:not(.gold) .ic{background:#2A2928}}
+.wl{min-height:calc(100vh - 140px);display:flex;flex-direction:column;justify-content:center}.wl .lg{width:64px;height:64px;font-size:22px;margin:0 0 18px}
+.wl .ey{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--pd);font-weight:700;margin:0 0 8px}.wl h1{font-size:30px;line-height:1.15;margin:0 0 8px}.wl h1 em{font-style:normal;color:var(--pd)}
+.wc{display:flex;gap:14px;align-items:center;width:100%;text-align:left;font:inherit;color:var(--t);background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:12px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.04)}
+.wc:active{transform:scale(.98)}.wc .ic{flex:none;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--soft);color:var(--pd)}.wc .ic svg.i{width:26px;height:26px}.wc b{display:block;font-size:18px}.wc p{margin:3px 0 0;font-size:14px}.wc .ar{margin-left:auto;color:var(--pd)}
+.wc.gold{background:var(--nav);border-color:var(--nav);color:#F2F0EC}.wc.gold .ic{background:var(--p);color:#1E1E1E}.wc.gold p{color:#B9B4AC}.wc.gold .ar{color:var(--p)}
 </style></head><body><div id="app"></div><div id="ov"></div>
 <script src="books.js"></script>
 <script>
 const SHEET_ID="1o_NBtHhbU1r1NmKpcDRkcYRNEfMRQmQyqHGPIWt-GSU";
 const API_URL="https://script.google.com/macros/s/AKfycbyzSfQkHh78EeNQYFWISRYqnAVc3moQL1ZwyQQPWGIuBoOI8rDGPsTRwjGynekOxTFO/exec"; /* ссылка Google Apps Script для записи результатов (появится на следующем шаге) */
 const tg=window.Telegram&&Telegram.WebApp; if(tg){try{tg.ready();tg.expand()}catch(e){}}
+const ICONS={home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',book:'<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',books:'<path d="M4 19.5V5a2 2 0 0 1 2-2h14v18H6.5A2.5 2.5 0 0 1 4 18.5"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20"/>',wo:'<rect x="3" y="4" width="7" height="6" rx="2"/><rect x="14" y="4" width="7" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/>',vo:'<path d="M3 19 8 5l5 14M5 14h6"/><circle cx="17.5" cy="15.5" r="3.5"/><path d="M21 12v7"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',cap:'<path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/>',pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',x:'<path d="M18 6 6 18M6 6l12 12"/>',back:'<path d="M19 12H5M12 19l-7-7 7-7"/>',right:'<path d="M5 12h14M12 5l7 7-7 7"/>',up:'<path d="M7 17 17 7M8 7h9v9"/>',vol:'<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>',trash:'<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',flame:'<path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 1 2 2 3 3 3 0-3-1-5 0-8z"/>',star:'<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',check:'<path d="M20 6 9 17l-5-5"/>',cards:'<rect x="3" y="7" width="13" height="14" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v12"/>',test:'<path d="m3 6 2 2 4-4M3 14l2 2 4-4M13 6h8M13 14h8"/>',link:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',plus:'<path d="M12 5v14M5 12h14"/>'};
+const I=n=>'<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+(ICONS[n]||"")+'</svg>';
+function isDark(){try{return !!((tg&&tg.colorScheme)?tg.colorScheme=="dark":(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches))}catch(e){return false}}
+function applyTheme(){document.documentElement.classList.toggle("dk",isDark());try{const c=getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();tg&&tg.setHeaderColor&&tg.setHeaderColor(c);tg&&tg.setBackgroundColor&&tg.setBackgroundColor(c)}catch(e){}}
+applyTheme();try{tg&&tg.onEvent&&tg.onEvent("themeChanged",applyTheme)}catch(e){}
+/* Кнопка «Назад» Telegram */
+function onBack(){if($("ov").innerHTML){$("ov").innerHTML="";return}if(tab=="home"&&document.querySelector(".nav"))goWelcome();else{tab="home";view()}}
+function syncBack(){try{if(!tg||!tg.BackButton)return;tab=="welcome"?tg.BackButton.hide():tg.BackButton.show()}catch(e){}}
+try{tg&&tg.BackButton&&tg.BackButton.onClick(onBack)}catch(e){}
 const U=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user)||{id:"guest",first_name:"Гость"};
 const $=id=>document.getElementById(id), esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const TYPES={affirmative:"Утверждение",negative:"Отрицание",question:"Вопрос"}, LV={1:"Лёгкий",2:"Средний",3:"Сложный"};
@@ -100,27 +116,27 @@ async function load(){
  await pullProfile();P.role=="student"?enterStudent():welcome();
  pullW().then(()=>{if($("nw"))words()});
 }
-function nav(){const t=[["home","🏠","Home","tab='home';view()"],["books","📚","Books","books()"],["wo","🧩","Word Order","setup()"],["vo","🔤","Vocabulary","words()"],["profile","👤","Profile","tab='profile';view()"]];return '<div class="nav">'+t.map(x=>'<button class="'+(tab==x[0]?"on":"")+'" onclick="'+x[3]+'">'+x[1]+'<br><small>'+x[2]+'</small></button>').join("")+'</div>'+'<button class="fab" onclick="lead()" aria-label="Быстрая заявка" title="Записаться на диагностику"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></button>'}
+function nav(){syncBack();const t=[["home","home","Главная","tab='home';view()"],["books","books","Книги","books()"],["wo","wo","Word Order","setup()"],["vo","vo","Слова","words()"],["profile","user","Профиль","tab='profile';view()"]];return '<div class="nav">'+t.map(x=>'<button class="'+(tab==x[0]?"on":"")+'" onclick="'+x[3]+'">'+I(x[1])+'<small>'+x[2]+'</small></button>').join("")+'</div>'+'<button class="fab" onclick="lead()" aria-label="Быстрая заявка" title="Записаться на диагностику"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></button>'}
 function view(){ $("ov").innerHTML=""; tab=="profile"?profile():tab=="books"?books():home() }
 function home(){
  tab="home";const L=BP.last&&bk(BP.last.b),LC=L&&L.ch[BP.last.c],nd=Object.values(BP.done).reduce((a,x)=>a+x.length,0);
- $("app").innerHTML='<h1>Привет, '+esc((P.reg&&P.reg.name)||U.first_name||"друг")+'! 👋</h1><div class="pills"><span class="pill">🔥 '+P.streak+'</span><span class="pill">⭐ '+P.xp+' XP</span><span class="pill">📖 '+nd+'</span></div>'+
+ $("app").innerHTML='<div class="hd"><button class="x" onclick="goWelcome()" aria-label="Назад">'+I("back")+'</button><span class="brand"><span class="lg">OE</span>Orient English Express</span></div><h1>Привет, '+esc((P.reg&&P.reg.name)||U.first_name||"друг")+'! 👋</h1><div class="pills"><span class="pill">'+I("flame")+P.streak+'</span><span class="pill">'+I("star")+P.xp+' XP</span><span class="pill">'+I("book")+nd+'</span></div>'+
  (OFF?'<p style="font-size:12px">⚠️ Таблица недоступна ('+esc(OFF)+'). Работает встроенная база.</p>':'')+
- (LC?'<h2 style="margin-top:0">Продолжить чтение</h2><button class="card" onclick="read(\''+L.id+'\','+BP.last.c+','+BP.last.i+')"><span class="ic">📖</span><span><b>'+esc(L.t)+'</b><p>'+esc(LC.t)+'</p></span></button>':'')+'<h2 style="margin-top:'+(LC?20:0)+'px">Учиться</h2>'+
- '<button class="card" onclick="lead()" style="background:#FBF3E6;border-color:#EDD9B4"><span class="ic" style="background:#EDBE78">📞</span><span><b>Бесплатная диагностика</b><p>Встреча с завучем: цель, уровень и план обучения</p></span></button>'+'<button class="card" onclick="books()"><span class="ic">📚</span><span><b>Books</b><p>Истории A1–A2 с переводом слов</p></span></button>'+
- '<button class="card" onclick="setup()"><span class="ic">🧩</span><span><b>Word Order</b><p>Собери предложение из облачков</p></span></button>'+
- '<button class="card" onclick="vocab()"><span class="ic">🎓</span><span><b>Учить слова</b><p>Готовые наборы: глаголы, существительные…</p></span></button><button class="card" onclick="words()"><span class="ic">📝</span><span><b>Мои слова</b><p>Слова из книг и свои собственные</p></span></button>'+nav();
+ (LC?'<h2 style="margin-top:0">Продолжить чтение</h2><button class="card" onclick="read(\''+L.id+'\','+BP.last.c+','+BP.last.i+')"><span class="ic">'+I("book")+'</span><span><b>'+esc(L.t)+'</b><p>'+esc(LC.t)+'</p></span></button>':'')+'<h2 style="margin-top:'+(LC?20:0)+'px">Учиться</h2>'+
+ '<button class="card gold" onclick="lead()"><span class="ic">'+I("phone")+'</span><span><b>Бесплатная диагностика</b><p>Встреча с завучем: цель, уровень и план</p></span><span class="go2">'+I("up")+'</span></button>'+'<button class="card" onclick="books()"><span class="ic">'+I("books")+'</span><span><b>Книги</b><p>Истории A1–A2 с переводом слов</p></span></button>'+
+ '<button class="card" onclick="setup()"><span class="ic">'+I("wo")+'</span><span><b>Word Order</b><p>Собери предложение из облачков</p></span></button>'+
+ '<button class="card" onclick="vocab()"><span class="ic">'+I("cap")+'</span><span><b>Учить слова</b><p>Готовые наборы: глаголы, существительные…</p></span></button><button class="card" onclick="words()"><span class="ic">'+I("pen")+'</span><span><b>Мои слова</b><p>Слова из книг и свои собственные</p></span></button>'+nav();
 }
 function profile(){
  const acc=P.solved?Math.round(P.correct/P.solved*100):0,n=(U.first_name||"?")+" "+(U.last_name||"");
  $("app").innerHTML='<div class="c"><div class="av">'+esc((U.first_name||"?")[0].toUpperCase())+'</div><h1 style="margin:0">'+esc(n.trim())+'</h1><p>'+(U.username?"@"+esc(U.username):"ID "+U.id)+'</p></div><h2>Статистика</h2><div class="grid">'+
- '<div class="stat"><b>⭐ '+P.xp+'</b><p>Очки XP</p></div><div class="stat"><b>🔥 '+P.streak+'</b><p>Серия дней</p></div><div class="stat"><b>'+P.solved+'</b><p>Решено</p></div><div class="stat"><b>'+acc+'%</b><p>Точность</p></div></div><h2>Профиль</h2><p>Уровень: '+esc((P.reg&&P.reg.lvl)||"—")+' · Цель: '+esc((P.reg&&P.reg.goal)||"—")+'</p><br><button class="btn sec" onclick="reg()">Изменить профиль</button><div style="height:10px"></div><button class="btn sec" onclick="P.role=\'\';saveP();welcome()">Экран выбора</button>'+nav();
+ '<div class="stat"><b>'+I("star")+P.xp+'</b><p>Очки XP</p></div><div class="stat"><b>'+I("flame")+P.streak+'</b><p>Серия дней</p></div><div class="stat"><b>'+P.solved+'</b><p>Решено</p></div><div class="stat"><b>'+acc+'%</b><p>Точность</p></div></div><h2>Профиль</h2><p>Уровень: '+esc((P.reg&&P.reg.lvl)||"—")+' · Цель: '+esc((P.reg&&P.reg.goal)||"—")+'</p><br><button class="btn sec" onclick="reg()">Изменить профиль</button><div style="height:10px"></div><button class="btn sec" onclick="P.role=\'\';saveP();welcome()">Экран выбора</button>'+nav();
 }
 const chips=(k,opts)=>'<div class="chips">'+opts.map(o=>'<button class="chip '+(F[k]==o[0]?"on":"")+'" onclick="F.'+k+'=\''+o[0]+'\';setup()">'+o[1]+'</button>').join("")+'</div>';
 function setup(){
- const tn=[["all","🔄 Все"]].concat(Object.keys(TN).map(k=>[k,TN[k].i+" "+TN[k].n]));
- $("app").innerHTML='<div class="top"><button class="x" onclick="view()">✕</button><h1 style="margin:0">Word Order</h1></div><h2 style="margin-top:0">Время</h2>'+chips("tense",tn)+
- '<h2>Тип предложения</h2>'+chips("type",[["all","🔄 Все"]].concat(Object.entries(TYPES)))+'<h2>Сложность</h2>'+chips("level",[["all","🔄 Все"],[1,"🌱 Лёгкий"],[2,"🌿 Средний"],[3,"🌳 Сложный"]])+
+ const tn=[["all","Все"]].concat(Object.keys(TN).map(k=>[k,TN[k].i+" "+TN[k].n]));
+ $("app").innerHTML='<div class="top"><button class="x" onclick="view()" aria-label="Закрыть">'+I("x")+'</button><h1 style="margin:0">Word Order</h1></div><h2 style="margin-top:0">Время</h2>'+chips("tense",tn)+
+ '<h2>Тип предложения</h2>'+chips("type",[["all","Все"]].concat(Object.entries(TYPES)))+'<h2>Сложность</h2>'+chips("level",[["all","Все"],[1,"Лёгкий"],[2,"Средний"],[3,"Сложный"]])+
  '<div style="height:90px"></div><div class="foot"><div class="inner"><button class="btn" onclick="start()">Начать</button></div></div>';
  $("ov").innerHTML="";
 }
@@ -137,7 +153,7 @@ function game(){
   const st=G.chk?(w==x[1]?" ok":" bad"):"";
   return '<div class="slot'+(w?" full":"")+st+'" onclick="rm('+k+')">'+(w?esc(w):'<small>'+esc(x[0])+'</small>')+'</div>'}).join("");
  const pool=G.cards.filter(c=>!G.placed.includes(c.id)).map(c=>'<button class="chip" onclick="put('+c.id+')">'+esc(c.w)+'</button>').join("");
- $("app").innerHTML='<div class="top"><button class="x" onclick="if(confirm(\'Выйти? Прогресс этой сессии не сохранится.\'))view()">✕</button><div class="bar"><i style="width:'+(G.i/G.list.length*100)+'%"></i></div></div>'+
+ $("app").innerHTML='<div class="top"><button class="x" onclick="if(confirm(\'Выйти? Прогресс этой сессии не сохранится.\'))view()" aria-label="Закрыть">'+I("x")+'</button><div class="bar"><i style="width:'+(G.i/G.list.length*100)+'%"></i></div></div>'+
  '<p>'+(TN[it.tense]?TN[it.tense].n:it.tense)+' · '+(TYPES[it.type]||it.type)+'</p><div class="ru">'+esc(it.ru)+'</div><p>Собери предложение по-английски</p><div class="slots">'+sl+'</div><div class="pool">'+pool+'</div>'+
  (G.chk?'':'<div class="foot"><div class="inner"><button class="btn" '+(full?"":"disabled")+' onclick="check()">Проверить</button></div></div>');
 }
@@ -173,7 +189,7 @@ function saveW(local){try{localStorage.setItem(wkey,JSON.stringify(W))}catch(e){
 function tick(){const d=new Date().toDateString();if(P.last!==d){P.streak++;P.last=d}}
 let tt,PLV=false,PL=[],BK="words()",VS="verbs",SEL=[],REG={};
 const isSet=x=>String(x.added).startsWith("set:"),userPool=()=>W.map((x,i)=>i).filter(i=>!isSet(W[i])),wi=(id,w)=>W.findIndex(x=>x.added=="set:"+id&&x.w==w);
-const tp=(p,b)=>'<div class="top"><button class="x" onclick="'+(b||BK)+'">✕</button><div class="bar"><i style="width:'+p+'%"></i></div></div>';
+const tp=(p,b)=>'<div class="top"><button class="x" onclick="'+(b||BK)+'" aria-label="Закрыть">'+I("x")+'</button><div class="bar"><i style="width:'+p+'%"></i></div></div>';
 const say=i=>{try{const u=new SpeechSynthesisUtterance(W[i].w);u.lang="en-US";speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}};
 async function tr(w){
  const ru=/[а-яё]/i.test(w),sl=ru?"ru":"en",tl=ru?"en":"ru",one=!/\s/.test(w);
@@ -195,10 +211,10 @@ async function autoTr(){
 }
 function words(){
  $("ov").innerHTML="";
- $("app").innerHTML='<div class="top"><button class="x" onclick="tab=\'home\';view()">✕</button><h1 style="margin:0">Мои слова</h1></div>'+
+ $("app").innerHTML='<div class="top"><button class="x" onclick="tab=\'home\';view()" aria-label="Закрыть">'+I("x")+'</button><h1 style="margin:0">Мои слова</h1></div>'+
  '<div class="stat" style="margin-bottom:14px"><input class="in" id="nw" placeholder="Новое слово (по-английски или по-русски)" autocomplete="off" autocapitalize="none" oninput="clearTimeout(tt);tt=setTimeout(autoTr,600)"><input class="in" id="nt" placeholder="Перевод появится сам" autocomplete="off" oninput="this.dataset.m=1" onkeydown="if(event.key==\'Enter\')addW()"><p id="st" style="font-size:12px;min-height:16px;margin:0 0 8px"></p><button class="btn" onclick="addW()">Добавить</button></div>'+
  (userPool().length?'<button class="btn sec" style="margin-bottom:14px" onclick="BK=\'words()\';wmodes(userPool())">Тренировать ('+userPool().length+')</button>':'<p class="c">Добавьте первое слово 👆</p>')+
- W.map((x,i)=>isSet(x)?"":'<div class="stat row" style="margin-bottom:8px"><span><b style="font-size:17px">'+esc(x.w)+'</b><p>'+esc(x.t)+' · '+mast(x.box)+'</p>'+(x.d?'<p style="font-size:13px">'+esc(x.d)+'</p>':'')+(x.ctx?'<p style="font-size:13px;font-style:italic">“'+esc(x.ctx)+'”</p>':'')+'</span><span><button class="x" onclick="say('+i+')">🔊</button><button class="x" onclick="delW('+i+')">🗑</button></span></div>').join("");
+ W.map((x,i)=>isSet(x)?"":'<div class="stat row" style="margin-bottom:8px"><span><b style="font-size:17px">'+esc(x.w)+'</b><p>'+esc(x.t)+' · '+mast(x.box)+'</p>'+(x.d?'<p style="font-size:13px">'+esc(x.d)+'</p>':'')+(x.ctx?'<p style="font-size:13px;font-style:italic">“'+esc(x.ctx)+'”</p>':'')+'</span><span class="acts"><button class="x" onclick="say('+i+')" aria-label="Озвучить">'+I("vol")+'</button><button class="x" onclick="delW('+i+')" aria-label="Удалить">'+I("trash")+'</button></span></div>').join("");
 }
 function addW(){
  const w=$("nw").value.trim(),t=$("nt").value.trim();if(!w||!t){$("st").textContent="Введите слово и дождитесь перевода";return}
@@ -208,7 +224,7 @@ function addW(){
 function delW(i){W.splice(i,1);saveW();words()}
 function pickW(n){return PL.slice().sort((a,b)=>(W[a].box-W[b].box)||Math.random()-.5).slice(0,n)}
 function wmodes(p,v){
- if(p){PL=p;PLV=!!v}const n=PL.length,M=[["wo","🧩","Составить предложение","Word Order с выбранными словами",1],["fc","🃏","Карточки","Переворачивай и оценивай себя",1],["mc","✅","Тест","Выбери правильный перевод",2],["wr","⌨️","Написание","Напиши слово по переводу",1],["mt","🔗","Подбор пар","Соедини слово и перевод",2]];
+ if(p){PL=p;PLV=!!v}const n=PL.length,M=[["wo",I("wo"),"Составить предложение","Word Order с выбранными словами",1],["fc",I("cards"),"Карточки","Переворачивай и оценивай себя",1],["mc",I("test"),"Тест","Выбери правильный перевод",2],["wr",I("pen"),"Написание","Напиши слово по переводу",1],["mt",I("link"),"Подбор пар","Соедини слово и перевод",2]];
  $("ov").innerHTML="";
  $("app").innerHTML=tp(0)+'<h1 style="margin:0 0 14px">Как тренируем?</h1>'+M.filter(m=>m[0]!="wo"||PLV).map(m=>n>=m[4]?'<button class="card" onclick="wgo(\''+m[0]+'\')"><span class="ic">'+m[1]+'</span><span><b>'+m[2]+'</b><p>'+m[3]+'</p></span></button>':'<div class="card off"><span class="ic">'+m[1]+'</span><span><b>'+m[2]+'</b><p>Нужно минимум '+m[4]+' слова</p></span></div>').join("");
 }
@@ -229,13 +245,13 @@ function wend(ex){
 }
 function fr(){
  const i=WT.l[WT.i],x=W[i];$("ov").innerHTML="";
- $("app").innerHTML=tp(WT.i/WT.l.length*100)+'<div class="fcard" onclick="WT.f=!WT.f;fr()">'+(WT.f?'<div class="big" style="font-size:30px;color:var(--t)">'+esc(x.t)+'</div>':'<div class="big" style="font-size:36px">'+esc(x.w)+'</div><button class="x" onclick="event.stopPropagation();say('+i+')">🔊</button>')+'<p>'+(WT.f?"Перевод":"Нажми, чтобы перевернуть")+'</p></div><div class="foot"><div class="inner row" style="gap:10px"><button class="btn sec" onclick="fk(0)">Не знаю</button><button class="btn" onclick="fk(1)">Знаю</button></div></div>';
+ $("app").innerHTML=tp(WT.i/WT.l.length*100)+'<div class="fcard" onclick="WT.f=!WT.f;fr()">'+(WT.f?'<div class="big" style="font-size:30px;color:var(--t)">'+esc(x.t)+'</div>':'<div class="big" style="font-size:36px">'+esc(x.w)+'</div><button class="x" onclick="event.stopPropagation();say('+i+')" aria-label="Озвучить">'+I("vol")+'</button>')+'<p>'+(WT.f?"Перевод":"Нажми, чтобы перевернуть")+'</p></div><div class="foot"><div class="inner row" style="gap:10px"><button class="btn sec" onclick="fk(0)">Не знаю</button><button class="btn" onclick="fk(1)">Знаю</button></div></div>';
 }
 function fk(ok){wgrade(W[WT.l[WT.i]],ok,3);WT.f=0;wnext()}
 function mq(){
  const x=W[WT.l[WT.i]],d=Math.random()<.5,f=d?"w":"t",g=d?"t":"w";WT.chk=0;
  const o=sh([x[g]].concat(sh([...new Set(PL.map(i=>W[i]).concat(W.filter((y,i)=>!PL.includes(i))).filter(y=>y!==x&&y[g]!=x[g]).map(y=>y[g]))]).slice(0,3)));WT.ans=x[g];$("ov").innerHTML="";
- $("app").innerHTML=tp(WT.i/WT.l.length*100)+'<p>Выбери '+(d?"перевод":"слово")+'</p><div class="ru" style="font-size:30px;margin:14px 0 20px">'+esc(x[f])+(d?' <button class="x" onclick="say('+WT.l[WT.i]+')">🔊</button>':'')+'</div>'+o.map(v=>'<button class="chip" style="display:block;width:100%;margin-bottom:10px;text-align:left" data-v="'+esc(v)+'" onclick="mpick(this)">'+esc(v)+'</button>').join("");
+ $("app").innerHTML=tp(WT.i/WT.l.length*100)+'<p>Выбери '+(d?"перевод":"слово")+'</p><div class="ru" style="font-size:30px;margin:14px 0 20px">'+esc(x[f])+(d?' <button class="x" onclick="say('+WT.l[WT.i]+')" aria-label="Озвучить">'+I("vol")+'</button>':'')+'</div>'+o.map(v=>'<button class="chip" style="display:block;width:100%;margin-bottom:10px;text-align:left" data-v="'+esc(v)+'" onclick="mpick(this)">'+esc(v)+'</button>').join("");
 }
 function mpick(b){
  if(WT.chk)return;WT.chk=1;const ok=b.dataset.v==WT.ans;
@@ -269,11 +285,11 @@ function ensure(S,k){const w=S.l[k][0];let i=wi(S.id,w);if(i<0){W.push({w,t:S.l[
 const vb=(S,k)=>{const i=wi(S.id,S.l[k][0]);return i>=0?W[i].box:-1};
 function vocab(){
  $("ov").innerHTML="";
- $("app").innerHTML='<div class="top"><button class="x" onclick="tab=\'home\';view()">✕</button><h1 style="margin:0">Учить слова</h1></div><p style="margin-bottom:14px">Выберите набор, отметьте слова и тренируйтесь</p>'+VOCAB.map(S=>{const kn=S.l.filter((x,k)=>vb(S,k)>=3).length;return '<button class="card" onclick="vset(\''+S.id+'\')"><span class="ic">'+S.i+'</span><span><b>'+S.n+'</b><p>Выучено '+kn+' из '+S.l.length+'</p></span></button>'}).join("");
+ $("app").innerHTML='<div class="top"><button class="x" onclick="tab=\'home\';view()" aria-label="Закрыть">'+I("x")+'</button><h1 style="margin:0">Учить слова</h1></div><p style="margin-bottom:14px">Выберите набор, отметьте слова и тренируйтесь</p>'+VOCAB.map(S=>{const kn=S.l.filter((x,k)=>vb(S,k)>=3).length;return '<button class="card" onclick="vset(\''+S.id+'\')"><span class="ic">'+S.i+'</span><span><b>'+S.n+'</b><p>Выучено '+kn+' из '+S.l.length+'</p></span></button>'}).join("");
 }
 function vset(id){
  if(id){VS=id;SEL=[]}const S=VOCAB.find(x=>x.id==VS);BK="vset()";$("ov").innerHTML="";
- $("app").innerHTML='<div class="top"><button class="x" onclick="vocab()">✕</button><h1 style="margin:0">'+S.i+' '+S.n+'</h1></div><div class="chips" style="margin-bottom:14px"><button class="chip" onclick="vsel(10)">⚡ 10 новых</button><button class="chip" onclick="vsel(99)">Все</button><button class="chip" onclick="SEL=[];vset()">Сбросить</button></div><div class="chips">'+S.l.map((x,k)=>'<button class="chip'+(SEL.includes(k)?" on":"")+'" onclick="vtg('+k+')" style="text-align:left"><b>'+esc(x[0])+'</b><br><small style="color:var(--s)">'+esc(x[1])+(vb(S,k)>=3?" ✅":"")+'</small></button>').join("")+'</div><div style="height:90px"></div><div class="foot"><div class="inner"><button class="btn" '+(SEL.length?"":"disabled")+' onclick="vgo()">Начать ('+SEL.length+')</button></div></div>';
+ $("app").innerHTML='<div class="top"><button class="x" onclick="vocab()" aria-label="Закрыть">'+I("x")+'</button><h1 style="margin:0">'+S.i+' '+S.n+'</h1></div><div class="chips" style="margin-bottom:14px"><button class="chip" onclick="vsel(10)">10 новых</button><button class="chip" onclick="vsel(99)">Все</button><button class="chip" onclick="SEL=[];vset()">Сбросить</button></div><div class="chips">'+S.l.map((x,k)=>'<button class="chip'+(SEL.includes(k)?" on":"")+'" onclick="vtg('+k+')" style="text-align:left"><b>'+esc(x[0])+'</b><br><small style="color:var(--s)">'+esc(x[1])+(vb(S,k)>=3?" ✅":"")+'</small></button>').join("")+'</div><div style="height:90px"></div><div class="foot"><div class="inner"><button class="btn" '+(SEL.length?"":"disabled")+' onclick="vgo()">Начать ('+SEL.length+')</button></div></div>';
 }
 function vtg(k){const y=scrollY,i=SEL.indexOf(k);i<0?SEL.push(k):SEL.splice(i,1);vset();scrollTo(0,y)}
 function vsel(n){const S=VOCAB.find(x=>x.id==VS);SEL=S.l.map((x,k)=>k).sort((a,b)=>vb(S,a)-vb(S,b)||Math.random()-.5).slice(0,n);vset()}
@@ -302,18 +318,18 @@ const bk=id=>(window.BOOKS||[]).find(b=>b.id==id), bd=b=>(BP.done[b.id]||[]).len
 function books(){
  tab="books";$("ov").innerHTML="";
  if(!window.BOOKS){$("app").innerHTML='<h1>Books</h1><p>Не удалось загрузить книги (файл books.js).</p>'+nav();return}
- $("app").innerHTML='<h1>Books 📚</h1>'+BOOKS.map(b=>b.ch.length?'<button class="card bk" onclick="bookPage(\''+b.id+'\')"><span class="ic">📘</span><span><b>'+esc(b.t)+'<span class="lv">'+b.l+'</span></b><p>'+esc(b.d)+'</p><p style="font-size:13px">Глав пройдено: '+bd(b)+' из '+b.ch.length+'</p></span><div class="bar"><i style="width:'+bd(b)/b.ch.length*100+'%"></i></div></button>':'<div class="card off bk"><span class="ic">📕</span><span><b>'+esc(b.t)+'<span class="lv">'+b.l+'</span></b><p>Скоро: книга готовится</p></span></div>').join("")+nav();
+ $("app").innerHTML='<h1>Книги</h1>'+BOOKS.map(b=>b.ch.length?'<button class="card bk" onclick="bookPage(\''+b.id+'\')"><span class="ic">'+I("book")+'</span><span><b>'+esc(b.t)+'<span class="lv">'+b.l+'</span></b><p>'+esc(b.d)+'</p><p style="font-size:13px">Глав пройдено: '+bd(b)+' из '+b.ch.length+'</p></span><div class="bar"><i style="width:'+bd(b)/b.ch.length*100+'%"></i></div></button>':'<div class="card off bk"><span class="ic">'+I("lock")+'</span><span><b>'+esc(b.t)+'<span class="lv">'+b.l+'</span></b><p>Скоро: книга готовится</p></span></div>').join("")+nav();
 }
 function bookPage(id){
  const B=bk(id),dn=BP.done[id]||[];$("ov").innerHTML="";
- $("app").innerHTML='<div class="top"><button class="x" onclick="books()">✕</button><h1 style="margin:0">'+esc(B.t)+'</h1></div><p>'+B.l+' · '+esc(B.d)+'</p><h2>Главы</h2>'+B.ch.map((c,k)=>'<button class="card" onclick="read(\''+id+'\','+k+','+(BP.last&&BP.last.b==id&&BP.last.c==k?BP.last.i:0)+')"><span class="ic">'+(dn.includes(k)?"✅":(k+1))+'</span><span><b>'+esc(c.t)+'</b><p>'+c.p.length+' фрагментов · тест '+c.q.length+' вопроса</p></span></button>').join("");
+ $("app").innerHTML='<div class="top"><button class="x" onclick="books()" aria-label="Закрыть">'+I("x")+'</button><h1 style="margin:0">'+esc(B.t)+'</h1></div><p>'+B.l+' · '+esc(B.d)+'</p><h2>Главы</h2>'+B.ch.map((c,k)=>'<button class="card" onclick="read(\''+id+'\','+k+','+(BP.last&&BP.last.b==id&&BP.last.c==k?BP.last.i:0)+')"><span class="ic">'+(dn.includes(k)?I("check"):(k+1))+'</span><span><b>'+esc(c.t)+'</b><p>'+c.p.length+' фрагментов · тест '+c.q.length+' вопроса</p></span></button>').join("");
 }
 function read(b,c,i){
  const B=bk(b),C=B.ch[c],n=C.p.length;i=Math.max(0,Math.min(i,n-1));RD={b,c,i};BP.last={b,c,i};saveBP();$("ov").innerHTML="";
  $("app").innerHTML=tp((i+1)/n*100,"bookPage('"+b+"')")+'<p>'+esc(B.t)+' · '+esc(C.t)+'</p><div class="rd">'+C.p[i].replace(/([A-Za-z']+)|([^A-Za-z']+)/g,(m,w,o)=>w?'<span class="w" onclick="wd(this)">'+w+'</span>':esc(o))+'</div><p style="font-size:13px">Нажмите на слово, чтобы увидеть перевод</p>'+
- '<div class="foot"><div class="inner" style="display:flex;gap:10px">'+(i?'<button class="btn sec" style="width:35%" onclick="read(\''+b+'\','+c+','+(i-1)+')">←</button>':'')+'<button class="btn" onclick="'+(i<n-1?"read('"+b+"',"+c+","+(i+1)+")":"quiz("+c+")")+'">'+(i<n-1?"Дальше":"Пройти тест")+'</button></div></div>';
+ '<div class="foot"><div class="inner" style="display:flex;gap:10px">'+(i?'<button class="btn sec" style="width:35%" onclick="read(\''+b+'\','+c+','+(i-1)+')" aria-label="Назад">'+I("back")+'</button>':'')+'<button class="btn" onclick="'+(i<n-1?"read('"+b+"',"+c+","+(i+1)+")":"quiz("+c+")")+'">'+(i<n-1?"Дальше":"Пройти тест")+'</button></div></div>';
 }
-function popx(w,t,d,saved){return '<div class="sheet pop"><div class="inner"><div class="row"><b id="pw">'+esc(w)+'</b><button class="x" onclick="$(\'ov\').innerHTML=\'\'">✕</button></div><p id="pt" style="color:var(--t);font-size:17px">'+esc(t)+'</p><p id="pe">'+esc(d||"")+'</p><button class="btn sec" id="ps" '+(saved?"disabled":"")+' onclick="saveWord()">'+(saved?"✓ В словаре":"＋ В словарь")+'</button></div></div>'}
+function popx(w,t,d,saved){return '<div class="sheet pop"><div class="inner"><div class="row"><b id="pw">'+esc(w)+'</b><button class="x" onclick="$(\'ov\').innerHTML=\'\'" aria-label="Закрыть">'+I("x")+'</button></div><p id="pt" style="color:var(--t);font-size:17px">'+esc(t)+'</p><p id="pe">'+esc(d||"")+'</p><button class="btn sec" id="ps" '+(saved?"disabled":"")+' onclick="saveWord()">'+(saved?"✓ В словаре":"＋ В словарь")+'</button></div></div>'}
 async function wd(el){
  document.querySelectorAll(".w.sel").forEach(x=>x.classList.remove("sel"));el.classList.add("sel");
  const w=el.textContent,l=w.toLowerCase(),C=bk(RD.b).ch[RD.c],g=C.g[l]||C.g[l.replace(/'s$/,"")],ctx=C.p[RD.i];
@@ -346,12 +362,13 @@ function qend(){
 }
 /* ===== Экран выбора при входе ===== */
 function welcome(){
- tab="welcome";$("ov").innerHTML="";const dk=leadDark();document.body.classList.toggle("dkw",dk);if(dk)document.body.style.background="#171716";
- $("app").innerHTML='<div class="wl"><div class="lg">🇬🇧</div><p class="ey">Orient English Express</p><h1>Добро пожаловать! 👋</h1><p>Выберите, что вам нужно:</p>'+
- '<button class="wc" onclick="enterStudent(1)"><span class="ic">🎓</span><span><b>Я студент</b><p>Книги, слова и упражнения</p></span><span class="ar">→</span></button>'+
- '<button class="wc gold" onclick="lead()"><span class="ic">📞</span><span><b>Быстрая заявка</b><p>Бесплатная диагностика с завучем</p></span><span class="ar">↗</span></button></div>';
+ tab="welcome";$("ov").innerHTML="";syncBack();
+ $("app").innerHTML='<div class="wl"><div class="lg">OE</div><p class="ey">Orient English Express</p><h1>Английский <em>за 30 дней.</em></h1><p>Выберите, что вам нужно:</p>'+
+ '<button class="wc" onclick="enterStudent(1)"><span class="ic">'+I("cap")+'</span><span><b>Я студент</b><p>Книги, слова и упражнения</p></span><span class="ar">'+I("right")+'</span></button>'+
+ '<button class="wc gold" onclick="lead()"><span class="ic">'+I("phone")+'</span><span><b>Быстрая заявка</b><p>Бесплатная диагностика с завучем</p></span><span class="ar">'+I("up")+'</span></button></div>';
 }
-function enterStudent(first){document.body.classList.remove("dkw");document.body.style.background="";if(first){P.role="student";saveP()}P.reg?view():reg()}
+function enterStudent(first){if(first){P.role="student";saveP()}tab="home";P.reg?view():reg()}
+function goWelcome(){welcome()}
 /* ===== Быстрая заявка (как форма на orientenglish.com/#booking) ===== */
 const CITIES=["Ташкент","Самарканд","Бухара","Андижан","Наманган","Фергана","Другой город"], POLICY_URL="https://orientenglish.com/";
 let LD=null;
@@ -359,13 +376,13 @@ function lead(){LD=LD||{name:(P.reg&&P.reg.name)||U.first_name||"",phone:"",fmt:
 function leadClose(){$("ov").innerHTML=""}
 function leadOk(){return LD.name.trim().length>1&&LD.phone.replace(/\D/g,"").length>=9&&LD.fmt&&LD.time&&LD.age.trim()&&LD.city}
 function leadChk(){const b=$("lb");if(b)b.disabled=!leadOk()}
-function leadDark(){return !!((tg&&tg.colorScheme=="dark")||(!tg||!tg.colorScheme)&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)}
+function leadDark(){return isDark()}
 function leadr(){
  const dk=leadDark()?" dk":"", wrap=h=>'<div class="bd" onclick="leadClose()"></div><div class="lf'+dk+'"><div class="inner">'+h+'</div></div>';
  if(LD.sent){$("ov").innerHTML=wrap('<div class="c" style="padding:10px 0"><div class="big">✅</div><h3>Заявка отправлена!</h3><p class="sub">Завуч Orient English Express свяжется с вами, чтобы назначить диагностику.</p><button class="go" onclick="leadClose()">Хорошо</button></div>');return}
  const st=document.querySelector(".lf"),sc=st?st.scrollTop:0;
  const rad=(k,a,c)=>'<div class="rg '+c+'">'+a.map(v=>'<button class="ro'+(LD[k]==v?" on":"")+'" onclick="LD.'+k+'=\''+v+'\';leadr()">'+v+'</button>').join("")+'</div>';
- $("ov").innerHTML=wrap('<div class="row"><h3>Бесплатная диагностика</h3><button class="x" onclick="leadClose()">✕</button></div><p class="sub">Встреча с завучем один на один: цель, уровень и график.</p>'+
+ $("ov").innerHTML=wrap('<div class="row"><h3>Бесплатная диагностика</h3><button class="x" onclick="leadClose()" aria-label="Закрыть">'+I("x")+'</button></div><p class="sub">Встреча с завучем один на один: цель, уровень и график.</p>'+
  '<label>Имя<i>*</i></label><input class="fi" value="'+esc(LD.name)+'" autocomplete="name" oninput="LD.name=this.value;leadChk()">'+
  '<label>Телефон<i>*</i></label><input class="fi" type="tel" inputmode="tel" autocomplete="tel" placeholder="Номер телефона (с кодом страны)" value="'+esc(LD.phone)+'" oninput="LD.phone=this.value;leadChk()">'+
  '<label>Формат<i>*</i></label>'+rad("fmt",["Офлайн","Онлайн"],"r2")+
