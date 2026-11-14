@@ -97,7 +97,7 @@ async function load(){
   if(!Object.keys(TN).length)TN=FALLBACK_TN;
  }
  const d=new Date().toDateString();if(P.last!==d){const y=new Date(Date.now()-864e5).toDateString();if(P.last!==y)P.streak=0;saveP()}
- await pullProfile();(P.reg||P.role=="student")?enterStudent():welcome();
+ await pullProfile();P.role=="student"?enterStudent():welcome();
  pullW().then(()=>{if($("nw"))words()});
 }
 function nav(){const t=[["home","🏠","Home","tab='home';view()"],["books","📚","Books","books()"],["wo","🧩","Word Order","setup()"],["vo","🔤","Vocabulary","words()"],["profile","👤","Profile","tab='profile';view()"]];return '<div class="nav">'+t.map(x=>'<button class="'+(tab==x[0]?"on":"")+'" onclick="'+x[3]+'">'+x[1]+'<br><small>'+x[2]+'</small></button>').join("")+'</div>'+'<button class="fab" onclick="lead()" aria-label="Быстрая заявка" title="Записаться на диагностику"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></button>'}
@@ -114,7 +114,7 @@ function home(){
 function profile(){
  const acc=P.solved?Math.round(P.correct/P.solved*100):0,n=(U.first_name||"?")+" "+(U.last_name||"");
  $("app").innerHTML='<div class="c"><div class="av">'+esc((U.first_name||"?")[0].toUpperCase())+'</div><h1 style="margin:0">'+esc(n.trim())+'</h1><p>'+(U.username?"@"+esc(U.username):"ID "+U.id)+'</p></div><h2>Статистика</h2><div class="grid">'+
- '<div class="stat"><b>⭐ '+P.xp+'</b><p>Очки XP</p></div><div class="stat"><b>🔥 '+P.streak+'</b><p>Серия дней</p></div><div class="stat"><b>'+P.solved+'</b><p>Решено</p></div><div class="stat"><b>'+acc+'%</b><p>Точность</p></div></div><h2>Профиль</h2><p>Уровень: '+esc((P.reg&&P.reg.lvl)||"—")+' · Цель: '+esc((P.reg&&P.reg.goal)||"—")+'</p><br><button class="btn sec" onclick="reg()">Изменить профиль</button>'+nav();
+ '<div class="stat"><b>⭐ '+P.xp+'</b><p>Очки XP</p></div><div class="stat"><b>🔥 '+P.streak+'</b><p>Серия дней</p></div><div class="stat"><b>'+P.solved+'</b><p>Решено</p></div><div class="stat"><b>'+acc+'%</b><p>Точность</p></div></div><h2>Профиль</h2><p>Уровень: '+esc((P.reg&&P.reg.lvl)||"—")+' · Цель: '+esc((P.reg&&P.reg.goal)||"—")+'</p><br><button class="btn sec" onclick="reg()">Изменить профиль</button><div style="height:10px"></div><button class="btn sec" onclick="P.role=\'\';saveP();welcome()">Экран выбора</button>'+nav();
 }
 const chips=(k,opts)=>'<div class="chips">'+opts.map(o=>'<button class="chip '+(F[k]==o[0]?"on":"")+'" onclick="F.'+k+'=\''+o[0]+'\';setup()">'+o[1]+'</button>').join("")+'</div>';
 function setup(){
