@@ -39,6 +39,9 @@ h1{font-size:24px;margin:4px 0 14px}h2{font-size:19px;margin:20px 0 10px}p{color
 .rd{font-size:22px;line-height:1.7;color:var(--t);margin:18px 0 10px}.w{border-bottom:2px dotted #B7C4B8;cursor:pointer;border-radius:4px}.w.sel{background:#F1E3B8}
 .sheet.pop{background:#fff;border-top:2px solid var(--line);box-shadow:0 -6px 24px rgba(0,0,0,.12)}.sheet.pop p{margin:2px 0 10px}
 .bk{align-items:flex-start;flex-wrap:wrap}.bk .bar{height:8px;flex:none;width:100%;margin-top:8px}.lv{display:inline-block;font-size:12px;font-weight:800;background:#EAF0EA;color:var(--pd);border-radius:8px;padding:2px 8px;margin-left:6px}
+.fab{position:fixed;right:max(16px,calc(50% - 244px));bottom:calc(env(safe-area-inset-bottom,0px) + 82px);width:58px;height:58px;border-radius:50%;border:0;border-bottom:4px solid #B99A50;background:var(--ac);color:#fff;font-size:26px;box-shadow:0 6px 18px rgba(0,0,0,.18);cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center}
+.fab:active{transform:translateY(2px);border-bottom-width:2px}
+.bd{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9}.sheet.lead{z-index:10;max-height:90vh;overflow-y:auto}
 </style></head><body><div id="app"></div><div id="ov"></div>
 <script src="books.js"></script>
 <script>
@@ -74,14 +77,14 @@ async function load(){
  await pullProfile();P.reg?view():reg();
  pullW().then(()=>{if($("nw"))words()});
 }
-function nav(){const t=[["home","🏠","Home","tab='home';view()"],["books","📚","Books","books()"],["wo","🧩","Word Order","setup()"],["vo","🔤","Vocabulary","words()"],["profile","👤","Profile","tab='profile';view()"]];return '<div class="nav">'+t.map(x=>'<button class="'+(tab==x[0]?"on":"")+'" onclick="'+x[3]+'">'+x[1]+'<br><small>'+x[2]+'</small></button>').join("")+'</div>'}
+function nav(){const t=[["home","🏠","Home","tab='home';view()"],["books","📚","Books","books()"],["wo","🧩","Word Order","setup()"],["vo","🔤","Vocabulary","words()"],["profile","👤","Profile","tab='profile';view()"]];return '<div class="nav">'+t.map(x=>'<button class="'+(tab==x[0]?"on":"")+'" onclick="'+x[3]+'">'+x[1]+'<br><small>'+x[2]+'</small></button>').join("")+'</div>'+'<button class="fab" onclick="lead()" aria-label="Быстрая заявка" title="Быстрая заявка">📞</button>'}
 function view(){ $("ov").innerHTML=""; tab=="profile"?profile():tab=="books"?books():home() }
 function home(){
  tab="home";const L=BP.last&&bk(BP.last.b),LC=L&&L.ch[BP.last.c],nd=Object.values(BP.done).reduce((a,x)=>a+x.length,0);
  $("app").innerHTML='<h1>Привет, '+esc((P.reg&&P.reg.name)||U.first_name||"друг")+'! 👋</h1><div class="pills"><span class="pill">🔥 '+P.streak+'</span><span class="pill">⭐ '+P.xp+' XP</span><span class="pill">📖 '+nd+'</span></div>'+
  (OFF?'<p style="font-size:12px">⚠️ Таблица недоступна ('+esc(OFF)+'). Работает встроенная база.</p>':'')+
  (LC?'<h2 style="margin-top:0">Продолжить чтение</h2><button class="card" onclick="read(\''+L.id+'\','+BP.last.c+','+BP.last.i+')"><span class="ic">📖</span><span><b>'+esc(L.t)+'</b><p>'+esc(LC.t)+'</p></span></button>':'')+'<h2 style="margin-top:'+(LC?20:0)+'px">Учиться</h2>'+
- '<button class="card" onclick="books()"><span class="ic">📚</span><span><b>Books</b><p>Истории A1–A2 с переводом слов</p></span></button>'+
+ '<button class="card" onclick="lead()" style="background:#FBF5E6;border-color:#EAD9AE"><span class="ic" style="background:#F4E7C4">📞</span><span><b>Записаться на курс</b><p>Оставьте заявку — менеджер перезвонит</p></span></button>'+'<button class="card" onclick="books()"><span class="ic">📚</span><span><b>Books</b><p>Истории A1–A2 с переводом слов</p></span></button>'+
  '<button class="card" onclick="setup()"><span class="ic">🧩</span><span><b>Word Order</b><p>Собери предложение из облачков</p></span></button>'+
  '<button class="card" onclick="vocab()"><span class="ic">🎓</span><span><b>Учить слова</b><p>Готовые наборы: глаголы, существительные…</p></span></button><button class="card" onclick="words()"><span class="ic">📝</span><span><b>Мои слова</b><p>Слова из книг и свои собственные</p></span></button>'+nav();
 }
@@ -317,6 +320,30 @@ function qend(){
  if(first)d.push(QZ.c);P.xp+=xp;tick();saveP();
  BP.last={b:B.id,c:Math.min(QZ.c+1,B.ch.length-1),i:0};saveBP();const nx=QZ.c+1<B.ch.length;
  $("app").innerHTML='<div class="c" style="margin-top:8vh"><p>Глава пройдена</p><div class="big">'+QZ.s+'/'+n+'</div><p>'+(first?"+"+xp+" XP":"Повтор: XP начисляется только за первое прохождение")+'</p></div><div class="foot"><div class="inner">'+(nx?'<button class="btn" onclick="read(\''+B.id+'\','+(QZ.c+1)+',0)">Следующая глава</button><div style="height:8px"></div>':'')+'<button class="btn sec" onclick="bookPage(\''+B.id+'\')">К книге</button></div></div>';
+}
+/* ===== Быстрая заявка ===== */
+let LD=null;
+function lead(){const r=P.reg||{};LD=LD||{name:r.name||U.first_name||"",phone:"",lvl:r.lvl||"",time:"",sent:0};LD.sent=0;leadr()}
+function leadClose(){$("ov").innerHTML=""}
+function leadOk(){return LD.name.trim().length>1&&LD.phone.replace(/\D/g,"").length>=9}
+function leadr(){
+ if(LD.sent){$("ov").innerHTML='<div class="bd" onclick="leadClose()"></div><div class="sheet pop lead"><div class="inner c"><div class="big">✅</div><b>Заявка отправлена!</b><p>Менеджер Orient English Express свяжется с вами в ближайшее время.</p><br><button class="btn" onclick="leadClose()">Хорошо</button></div></div>';return}
+ const ch=(k,a)=>'<div class="chips" style="margin-bottom:12px">'+a.map(v=>'<button class="chip '+(LD[k]==v?"on":"")+'" onclick="LD.'+k+'=LD.'+k+'==\''+v+'\'?\'\':\''+v+'\';leadr()">'+v+'</button>').join("")+'</div>';
+ const canContact=tg&&tg.requestContact&&tg.isVersionAtLeast&&tg.isVersionAtLeast("6.9");
+ $("ov").innerHTML='<div class="bd" onclick="leadClose()"></div><div class="sheet pop lead"><div class="inner"><div class="row"><b>📞 Быстрая заявка</b><button class="x" onclick="leadClose()">✕</button></div><p>Запишитесь на курс или пробный урок — мы перезвоним.</p>'+
+ '<input class="in" id="ln" placeholder="Ваше имя" value="'+esc(LD.name)+'" oninput="LD.name=this.value;$(\'lb\').disabled=!leadOk()">'+
+ '<input class="in" id="lp" type="tel" inputmode="tel" placeholder="Телефон, например +998 90 123 45 67" value="'+esc(LD.phone)+'" oninput="LD.phone=this.value;$(\'lb\').disabled=!leadOk()">'+
+ (canContact?'<button class="btn sec" style="margin-bottom:12px;font-size:14px" onclick="leadContact()">📱 Взять номер из Telegram</button>':'')+
+ '<p style="margin-bottom:6px">Ваш уровень</p>'+ch("lvl",["Не знаю","A1","A2","B1","B2+"])+
+ '<p style="margin-bottom:6px">Когда удобно позвонить?</p>'+ch("time",["Утром","Днём","Вечером","В любое время"])+
+ '<p id="le" style="color:var(--bad);font-size:13px;min-height:16px;margin:0 0 6px"></p><button class="btn" id="lb" '+(leadOk()?"":"disabled")+' onclick="leadSend()">Отправить заявку</button></div></div>';
+}
+function leadContact(){try{tg.requestContact((ok,res)=>{const c=ok&&res&&res.responseUnsafe&&res.responseUnsafe.contact;if(c&&c.phone_number){LD.phone=(String(c.phone_number).startsWith("+")?"":"+")+c.phone_number;leadr()}})}catch(e){}}
+async function leadSend(){
+ if(!leadOk())return;const b=$("lb");b.disabled=true;b.textContent="Отправляю…";
+ const body={init:(tg&&tg.initData)||"",action:"lead",uid:U.id,username:U.username||"",name:LD.name.trim(),phone:LD.phone.trim(),lvl:LD.lvl,time:LD.time,goal:(P.reg&&P.reg.goal)||""};
+ try{if(!API_URL)throw 0;await fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(body)});LD.sent=1;P.lead=Date.now();saveP();try{tg&&tg.HapticFeedback&&tg.HapticFeedback.notificationOccurred("success")}catch(e){}leadr()}
+ catch(e){b.disabled=false;b.textContent="Отправить заявку";$("le").textContent="Не получилось отправить. Проверьте интернет и попробуйте ещё раз."}
 }
 loadW();load();
 </script></body></html>

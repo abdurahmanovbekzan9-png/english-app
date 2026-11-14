@@ -1,0 +1,54 @@
+/**
+ * Быстрые заявки из Mini App (кнопка 📞).
+ *
+ * КАК ПОДКЛЮЧИТЬ (один раз):
+ * 1. Откройте ваш проект Google Apps Script (тот, чья ссылка стоит в API_URL в index.html).
+ * 2. Нажмите «+» рядом с «Файлы» → «Скрипт», назовите leads и вставьте весь этот код.
+ * 3. В вашей функции doPost(e), сразу после строки, где разбирается JSON (что-то вроде
+ *      var body = JSON.parse(e.postData.contents);
+ *    добавьте одну строку:
+ *      if (body.action == "lead") return handleLead(body);
+ * 4. «Настройки проекта» (шестерёнка) → «Свойства скрипта» → добавьте:
+ *      BOT_TOKEN     — токен вашего бота от @BotFather
+ *      LEADS_CHAT_ID — куда присылать заявки: ID менеджера или группы
+ *                      (у группы ID начинается с минуса, например -1001234567890;
+ *                       бот должен быть добавлен в эту группу)
+ * 5. «Начать развёртывание» → «Управление развёртываниями» → карандаш → Версия: «Новая версия» → «Развернуть».
+ *    Ссылка API_URL при этом не меняется.
+ */
+function handleLead(body) {
+  var name  = String(body.name  || "").slice(0, 100);
+  var phone = String(body.phone || "").slice(0, 30);
+  var lvl   = String(body.lvl   || "").slice(0, 20);
+  var time  = String(body.time  || "").slice(0, 30);
+  var user  = String(body.username || "").slice(0, 60);
+  var uid   = String(body.uid   || "").slice(0, 30);
+
+  // 1) Сохраняем в лист «Заявки» той же таблицы
+  var ss = SpreadsheetApp.getActiveSpreadsheet() ||
+           SpreadsheetApp.openById("1o_NBtHhbU1r1NmKpcDRkcYRNEfMRQmQyqHGPIWt-GSU");
+  var sh = ss.getSheetByName("Заявки") || ss.insertSheet("Заявки");
+  if (sh.getLastRow() == 0) sh.appendRow(["Дата", "Имя", "Телефон", "Уровень", "Когда звонить", "Telegram", "ID"]);
+  sh.appendRow([new Date(), name, phone, lvl, time, user ? "@" + user : "", uid]);
+
+  // 2) Присылаем менеджеру в Telegram
+  var props = PropertiesService.getScriptProperties();
+  var token = props.getProperty("BOT_TOKEN");
+  var chat  = props.getProperty("LEADS_CHAT_ID");
+  if (token && chat) {
+    var text = "🔔 Новая заявка\n\n" +
+      "👤 " + name + "\n" +
+      "📞 " + phone + "\n" +
+      (lvl  ? "🎯 Уровень: " + lvl + "\n" : "") +
+      (time ? "🕐 Позвонить: " + time + "\n" : "") +
+      (user ? "💬 @" + user + "\n" : (uid && uid != "guest" ? "💬 tg://user?id=" + uid + "\n" : ""));
+    UrlFetchApp.fetch("https://api.telegram.org/bot" + token + "/sendMessage", {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify({ chat_id: chat, text: text }),
+      muteHttpExceptions: true
+    });
+  }
+  return ContentService.createTextOutput(JSON.stringify({ ok: true }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
