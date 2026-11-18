@@ -313,7 +313,8 @@ function amoUsers() {
   (JSON.parse(res.getContentText())._embedded.users || []).forEach(function (u) { console.log(u.id + " — " + u.name + " (" + u.email + ")"); });
 }
 
-/** Создаёт в воронке этап «ТЕЛЕГРАМ БОТ» (в самом начале, перед остальными этапами)
+/** Создаёт в воронке этап «ТЕЛЕГРАМ БОТ» (вторым, сразу после первого этапа — первый этап
+ *  не трогаем: туда кладут заявки другие интеграции, например Facebook)
  *  и сохраняет его ID в свойство AMO_STATUS_ID. Если этап уже есть — просто сохраняет его ID. */
 function amoCreateStage() {
   var NAME = "ТЕЛЕГРАМ БОТ";
@@ -329,7 +330,8 @@ function amoCreateStage() {
   var id = ex && ex.id;
   if (!id) {
     var work = sts.filter(function (s) { return s.type == 0 && s.id != 142 && s.id != 143; });
-    var minSort = Math.min.apply(null, work.map(function (s) { return s.sort; }));
+    work.sort(function (x, y) { return x.sort - y.sort; });
+    var minSort = work.length > 1 ? Math.floor((work[0].sort + work[1].sort) / 2) + 1 : work[0].sort + 1;
     var res = UrlFetchApp.fetch(base + "/" + pipe.id + "/statuses", {
       method: "post", contentType: "application/json", headers: headers, muteHttpExceptions: true,
       payload: JSON.stringify([{ name: NAME, sort: minSort - 1, color: "#98cbff" }])
