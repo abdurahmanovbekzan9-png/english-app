@@ -135,8 +135,11 @@ async function load(){
   if(!Object.keys(TN).length)TN=FALLBACK_TN;
  }
  const d=new Date().toDateString();if(P.last!==d){const y=new Date(Date.now()-864e5).toDateString();if(P.last!==y)P.streak=0;saveP()}
- await pullProfile();if(!P.verified){const v=await cloudGet("verified");if(v){P.verified=v;saveP()}}
- P.verified?(enterStudent(1),recheckStudent()):welcome();
+ await pullProfile();
+ if(STUDENT_LOGIN){if(!P.verified){const v=await cloudGet("verified");if(v){P.verified=v;saveP()}}
+  P.verified?(enterStudent(1),recheckStudent()):welcome();}
+ else{if(P.role!="student"){const r=await cloudGet("role");if(r=="student"){P.role=r;saveP()}}
+  (P.role=="student"||P.reg)?enterStudent(1):welcome();}
  if(wantLead())lead("book");
  pullW().then(()=>{if($("nw"))words()});
 }
@@ -385,6 +388,8 @@ function qend(){
  $("app").innerHTML='<div class="c" style="margin-top:8vh"><p>Глава пройдена</p><div class="big">'+QZ.s+'/'+n+'</div><p>'+(first?"+"+xp+" XP":"Повтор: XP начисляется только за первое прохождение")+'</p></div><div class="foot"><div class="inner">'+(nx?'<button class="btn" onclick="read(\''+B.id+'\','+(QZ.c+1)+',0)">Следующая глава</button><div style="height:8px"></div>':'')+'<button class="btn sec" onclick="bookPage(\''+B.id+'\')">К книге</button></div></div>';
 }
 /* ===== Вход для студентов по номеру телефона ===== */
+/* Включить (true), когда в таблице заполнен лист «Студенты». Пока false — вход как раньше, без проверки номера. */
+const STUDENT_LOGIN=false;
 const PHONE_OFFICE="+998 78 555 08 07";
 function studentLogin(st,info){
  if(P.verified&&!st)return enterStudent(1);
@@ -429,7 +434,7 @@ function welcome(){
  $("app").innerHTML='<div class="wl"><div class="top2">'+logo()+'Orient English Express</div><p class="ey">Английский для взрослых</p><h1>Английский<em>за 30 дней.</em></h1><p class="lead2">Для взрослых, которым важен результат.</p><p>Научим говорить, понимать, читать и грамотно писать. Без учебников и домашних заданий.</p>'+
  '<div class="gt"><span class="sh">'+I("shield")+'</span><span><small>Официальная гарантия по договору</small><b>С вас — только посещение занятий. С нас — результат. <em>Или вернём 100% оплаты.</em></b></span></div>'+
  '<button class="btn" onclick="lead(\'quick\')">Записаться на бесплатную диагностику '+I("up")+'</button>'+
- '<button class="btn sec" onclick="studentLogin()">'+I("cap")+' Я студент — войти</button>'+
+ '<button class="btn sec" onclick="'+(STUDENT_LOGIN?'studentLogin()':'enterStudent(1)')+'">'+I("cap")+' Я студент — войти</button>'+
  '<div class="stats"><div><b>8 000+</b><span>выпускников</span></div><div><b>24/6</b><span>занятия в удобное время</span></div></div></div>';
 }
 function enterStudent(first){document.documentElement.classList.remove("hb");applyTheme();if(first&&P.role!="student"){P.role="student";saveP();cloudSet("role","student")}else if(first)cloudSet("role","student");tab="home";P.reg?view():reg()}
