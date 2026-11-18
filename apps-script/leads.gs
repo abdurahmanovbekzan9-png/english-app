@@ -37,8 +37,8 @@
 // ===== Расписание диагностики (меняйте здесь) =====
 var DIAG = {
   days: [1, 2, 3, 4, 5, 6],   // дни недели: 1 = пн … 6 = сб, 0 = вс
-  from: "10:00",              // первая запись
-  to: "20:00",                // к этому времени диагностика должна закончиться
+  from: "06:00",              // первая запись
+  to: "22:00",                // к этому времени диагностика должна закончиться
   step: 30,                   // минут на одну диагностику
   perSlot: 1,                 // сколько учеников на одно время
   aheadDays: 7,               // на сколько рабочих дней вперёд показывать время
@@ -65,7 +65,7 @@ function saveLead_(body) {
   var kind = body.kind == "book" ? "book" : "quick";
   var name = f("name"), phone = f("phone", 30), fmt = f("fmt", 20), time = f("time", 20),
       age = f("age", 20), city = f("city", 50), msg = f("msg", 500), lvl = f("lvl", 20),
-      user = f("username", 60), uid = f("uid", 30), slot = f("slot", 20);
+      user = f("username", 60), uid = f("uid", 30), slot = f("slot", 20), lang = f("lang", 20);
   var ss = book_();
   var slotDate = null, slotText = "";
 
@@ -79,7 +79,7 @@ function saveLead_(body) {
       var free = freeSlots_().some(function (d) { return d.date == slot.slice(0, 10) && d.slots.indexOf(slot.slice(11)) >= 0; });
       if (!free) return { ok: false, reason: "taken" };
       var dsh = diagSheet_(ss);
-      dsh.appendRow([slotDate, name, phone, fmt, age, city, msg, user ? "@" + user : "", uid, "Новая", new Date()]);
+      dsh.appendRow([slotDate, name, phone, fmt, age, city, msg, user ? "@" + user : "", uid, "Новая", new Date(), lang]);
       SpreadsheetApp.flush();
     } finally {
       lock.releaseLock();
@@ -90,9 +90,10 @@ function saveLead_(body) {
   // 1) Сохраняем в лист «Заявки» той же таблицы
   var sh = ss.getSheetByName("Заявки") || ss.insertSheet("Заявки");
   if (sh.getLastRow() == 0) sh.appendRow(["Дата", "Имя", "Телефон", "Формат", "Когда удобно", "Возраст", "Город", "Комментарий", "Уровень в приложении", "Telegram", "ID", "Тип"]);
-  else if (!sh.getRange(1, 12).getValue()) sh.getRange(1, 12).setValue("Тип");
+  if (!sh.getRange(1, 12).getValue()) sh.getRange(1, 12).setValue("Тип");
+  if (!sh.getRange(1, 13).getValue()) sh.getRange(1, 13).setValue("Язык");
   sh.appendRow([new Date(), name, phone, fmt, kind == "book" ? slotText : time, age, city, msg, lvl, user ? "@" + user : "", uid,
-                kind == "book" ? "Запись на диагностику" : "Быстрая заявка"]);
+                kind == "book" ? "Запись на диагностику" : "Быстрая заявка", lang]);
 
   // 2) Присылаем менеджеру в Telegram
   var props = PropertiesService.getScriptProperties();
@@ -102,6 +103,7 @@ function saveLead_(body) {
     var text = (kind == "book" ? "🗓 Запись на диагностику: " + slotText + "\n\n" : "🔔 Быстрая заявка — перезвонить\n\n") +
       "👤 " + name + "\n" +
       "📞 " + phone + "\n" +
+      (lang ? "🗣 Язык диагностики: " + lang + "\n" : "") +
       (fmt ? "🏫 Формат: " + fmt + "\n" : "") +
       (kind != "book" && time ? "🕐 Когда: " + time + "\n" : "") +
       (age ? "🎂 Возраст: " + age + "\n" : "") +
@@ -119,7 +121,7 @@ function saveLead_(body) {
 
   // 3) Сделка + контакт + задача колл-центру в amoCRM
   try {
-    sendToAmo({ kind: kind, slot: slotDate, name: name, phone: phone, fmt: fmt, time: time, age: age, city: city, msg: msg, lvl: lvl, user: user });
+    sendToAmo({ kind: kind, slot: slotDate, lang: lang, name: name, phone: phone, fmt: fmt, time: time, age: age, city: city, msg: msg, lvl: lvl, user: user });
   } catch (err) {
     console.error("amoCRM: " + err);
   }
@@ -137,12 +139,13 @@ function sendToAmo(d) {
   var book = d.kind == "book" && d.slot;
   var when = book ? slotLabel_(d.slot) : "";
   var cc = Number(props.getProperty("AMO_CALLCENTER_USER_ID"));
+  var langTxt = d.lang ? " (язык: " + d.lang + ")" : "";
 
   var lead = {
     name: (book ? "Диагностика " + when + ": " : "Быстрая заявка (Mini App): ") + d.name,
     _embedded: {
-      tags: book ? [{ name: "Mini App" }, { name: "Диагностика" }, { name: "Запись через бота" }]
-                 : [{ name: "Mini App" }, { name: "Быстрая заявка" }],
+      tags: (book ? [{ name: "Mini App" }, { name: "Диагностика" }, { name: "Запись через бота" }]
+                  : [{ name: "Mini App" }, { name: "Быстрая заявка" }]).concat(d.lang ? [{ name: d.lang }] : []),
       contacts: [{
         first_name: d.name,
         custom_fields_values: [{ field_code: "PHONE", values: [{ value: d.phone, enum_code: "MOB" }] }]
@@ -164,6 +167,7 @@ function sendToAmo(d) {
 
   // Все ответы из анкеты — примечанием в сделке
   var note = (book ? "Запись на диагностику через Telegram-бота\nВремя: " + when : "Быстрая заявка из Telegram Mini App") +
+    (d.lang ? "\nЯзык диагностики: " + d.lang : "") +
     (d.fmt ? "\nФормат: " + d.fmt : "") + (!book && d.time ? "\nКогда удобно: " + d.time : "") +
     (d.age ? "\nВозраст: " + d.age : "") + (d.city ? "\nГород: " + d.city : "") +
     (d.msg ? "\nКомментарий: " + d.msg : "") + (d.lvl ? "\nУровень в приложении: " + d.lvl : "") +
@@ -180,8 +184,8 @@ function sendToAmo(d) {
     task_type_id: 1, // «Связаться»
     complete_till: Math.floor(taskDeadline_(d.kind, d.slot, new Date()).getTime() / 1000),
     text: book
-      ? "Ученик записался на диагностику: " + when + (d.fmt ? " (" + d.fmt + ")" : "") + ". Позвонить, подтвердить запись и поставить задачу админу."
-      : "Быстрая заявка из Mini App. Перезвонить: " + d.name + ", " + d.phone + "."
+      ? "Ученик записался на диагностику: " + when + (d.fmt ? " (" + d.fmt + ")" : "") + langTxt + ". Позвонить, подтвердить запись и поставить задачу админу."
+      : "Быстрая заявка из Mini App" + langTxt + ". Перезвонить: " + d.name + ", " + d.phone + "."
   };
   if (cc) task.responsible_user_id = cc;
   var tr = UrlFetchApp.fetch(base + "/tasks", {
@@ -272,7 +276,7 @@ function book_() {
 function diagSheet_(ss) {
   var sh = ss.getSheetByName(DIAG_SHEET) || ss.insertSheet(DIAG_SHEET);
   if (sh.getLastRow() == 0) {
-    sh.appendRow(["Время диагностики", "Имя", "Телефон", "Формат", "Возраст", "Город", "Комментарий", "Telegram", "ID", "Статус", "Создано"]);
+    sh.appendRow(["Время диагностики", "Имя", "Телефон", "Формат", "Возраст", "Город", "Комментарий", "Telegram", "ID", "Статус", "Создано", "Язык"]);
     sh.getRange("A:A").setNumberFormat("dd.MM.yyyy HH:mm");
     sh.setFrozenRows(1);
   }
@@ -283,12 +287,12 @@ function diagSheet_(ss) {
 
 /** Создаёт тестовую быструю заявку в amoCRM (сделка + задача колл-центру). */
 function testAmo() {
-  sendToAmo({ kind: "quick", name: "Тест Mini App", phone: "+998900000000", fmt: "", time: "", age: "", city: "", msg: "Тестовая заявка, можно удалить", lvl: "", user: "" });
+  sendToAmo({ kind: "quick", lang: "Русский", name: "Тест Mini App", phone: "+998900000000", fmt: "", time: "", age: "", city: "", msg: "Тестовая заявка, можно удалить", lvl: "", user: "" });
 }
 /** Создаёт тестовую запись на диагностику в amoCRM на первое свободное время (в таблицу не пишет). */
 function testAmoBooking() {
   var d = freeSlots_().filter(function (x) { return x.slots.length; })[0];
-  sendToAmo({ kind: "book", slot: parseSlot_(d.date + " " + d.slots[0]), name: "Тест запись", phone: "+998900000000", fmt: "Офлайн", time: "", age: "25–34", city: "Ташкент", msg: "Тест, можно удалить", lvl: "", user: "" });
+  sendToAmo({ kind: "book", lang: "Узбекский", slot: parseSlot_(d.date + " " + d.slots[0]), name: "Тест запись", phone: "+998900000000", fmt: "Офлайн", time: "", age: "25–34", city: "Ташкент", msg: "Тест, можно удалить", lvl: "", user: "" });
 }
 /** Показывает в «Журнале» свободное время на ближайшие дни. */
 function testSlots() {
