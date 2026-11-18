@@ -444,9 +444,9 @@ function goWelcome(){welcome()}
    Стартовый экран → быстрая заявка. Кнопка в боте (адрес с ?lead=1) → запись на время. */
 const CITIES=["Ташкент","Самарканд","Бухара","Андижан","Наманган","Фергана","Другой город"], POLICY_URL="https://orientenglish.com/";
 let LD=null;
-function lead(mode){LD=LD||{name:(P.reg&&P.reg.name)||U.first_name||"",phone:"",fmt:"",age:"",city:"",msg:"",date:"",slot:"",days:null,ds:""};LD.mode=mode=="book"?"book":"quick";LD.sent=0;LD.err="";leadr();if(LD.mode=="book"&&!LD.days)leadSlots()}
+function lead(mode){LD=LD||{name:(P.reg&&P.reg.name)||U.first_name||"",phone:"",fmt:"",lang:"",age:"",city:"",msg:"",date:"",slot:"",days:null,ds:""};LD.mode=mode=="book"?"book":"quick";LD.sent=0;LD.err="";leadr();if(LD.mode=="book"&&!LD.days)leadSlots()}
 function leadClose(){$("ov").innerHTML=""}
-function leadPhoneOk(){return LD.name.trim().length>1&&LD.phone.replace(/\D/g,"").length>=9}
+function leadPhoneOk(){return LD.name.trim().length>1&&LD.phone.replace(/\D/g,"").length>=9&&!!LD.lang}
 function leadOk(){return LD.mode=="book"?leadPhoneOk()&&LD.fmt&&LD.slot&&LD.age.trim()&&LD.city:leadPhoneOk()}
 function leadChk(){const b=$("lb");if(b)b.disabled=!leadOk()}
 function leadDark(){return isDark()}
@@ -471,7 +471,8 @@ function leadr(){
  const st=document.querySelector(".lf"),sc=st?st.scrollTop:0;
  const rad=(k,a,c)=>'<div class="rg '+c+'">'+a.map(v=>'<button class="ro'+(LD[k]==v?" on":"")+'" onclick="LD.'+k+'=\''+v+'\';leadr()">'+v+'</button>').join("")+'</div>';
  const top='<label>Имя<i>*</i></label><input class="fi" value="'+esc(LD.name)+'" autocomplete="name" oninput="LD.name=this.value;leadChk()">'+
-  '<label>Телефон<i>*</i></label><input class="fi" type="tel" inputmode="tel" autocomplete="tel" placeholder="Номер телефона (с кодом страны)" value="'+esc(LD.phone)+'" oninput="LD.phone=this.value;leadChk()">';
+  '<label>Телефон<i>*</i></label><input class="fi" type="tel" inputmode="tel" autocomplete="tel" placeholder="Номер телефона (с кодом страны)" value="'+esc(LD.phone)+'" oninput="LD.phone=this.value;leadChk()">'+
+  '<label>Язык диагностики<i>*</i></label>'+rad("lang",["Русский","Узбекский"],"r2");
  const pp='<p class="pp">Нажимая кнопку, вы соглашаетесь с <a href="'+POLICY_URL+'" onclick="if(tg&&tg.openLink){tg.openLink(this.href);return false}" target="_blank">политикой обработки персональных данных</a>.</p>';
  const err='<p id="le" style="color:#E0574F;font-size:13px;margin:10px 0 0">'+esc(LD.err||"")+'</p>';
  let h;
@@ -502,7 +503,7 @@ function leadr(){
 }
 async function leadSend(){
  if(!leadOk())return;const b=$("lb"),book=LD.mode=="book",when=leadWhen();b.disabled=true;b.textContent="Отправляю…";LD.err="";
- const body={init:(tg&&tg.initData)||"",action:"lead",kind:LD.mode,uid:U.id,username:U.username||"",name:LD.name.trim(),phone:LD.phone.trim(),lvl:(P.reg&&P.reg.lvl)||"",msg:LD.msg.trim()};
+ const body={init:(tg&&tg.initData)||"",action:"lead",kind:LD.mode,uid:U.id,username:U.username||"",name:LD.name.trim(),phone:LD.phone.trim(),lang:LD.lang,lvl:(P.reg&&P.reg.lvl)||"",msg:LD.msg.trim()};
  if(book)Object.assign(body,{fmt:LD.fmt,age:LD.age.trim(),city:LD.city,slot:LD.date+" "+LD.slot});
  const j=await checkStudent(body);
  if(j&&j.ok){LD.sent=1;LD.sentWhen=j.slot||when;if(book){LD.days=null;LD.slot=""}P.lead=Date.now();saveP();try{tg&&tg.HapticFeedback&&tg.HapticFeedback.notificationOccurred("success")}catch(e){}leadr();return}
