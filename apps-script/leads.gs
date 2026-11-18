@@ -22,6 +22,8 @@
  *                       → «Внешняя интеграция» → после сохранения вкладка «Ключи и доступы»
  *                       → «Долгосрочный токен» → выберите срок → скопируйте)
  *      AMO_PIPELINE_ID — (необязательно) ID воронки, если сделки нужны не в основной воронке
+ *      AMO_STATUS_ID  — (необязательно) ID этапа воронки для новых заявок. Создать этап «ТЕЛЕГРАМ БОТ»
+ *                       и прописать его сюда автоматически: выберите функцию amoCreateStage → «Выполнить».
  *      AMO_CALLCENTER_USER_ID — (необязательно) ID сотрудника колл-центра, кому ставить задачи.
  *                       Узнать ID: выберите вверху функцию amoUsers → «Выполнить» → смотрите «Журнал».
  *                       Если не указать — задача достанется ответственному по сделке
@@ -154,6 +156,8 @@ function sendToAmo(d) {
   };
   var pipeline = Number(props.getProperty("AMO_PIPELINE_ID"));
   if (pipeline) lead.pipeline_id = pipeline;
+  var status = Number(props.getProperty("AMO_STATUS_ID"));   // этап воронки, например «ТЕЛЕГРАМ БОТ»
+  if (status) lead.status_id = status;
   if (cc) lead.responsible_user_id = cc;
 
   var res = UrlFetchApp.fetch(base + "/leads/complex", {
@@ -307,4 +311,32 @@ function amoUsers() {
   });
   if (res.getResponseCode() >= 300) { console.log("Ошибка " + res.getResponseCode() + ": " + res.getContentText().slice(0, 300)); return; }
   (JSON.parse(res.getContentText())._embedded.users || []).forEach(function (u) { console.log(u.id + " — " + u.name + " (" + u.email + ")"); });
+}
+
+/** Создаёт в воронке этап «ТЕЛЕГРАМ БОТ» (в самом начале, перед остальными этапами)
+ *  и сохраняет его ID в свойство AMO_STATUS_ID. Если этап уже есть — просто сохраняет его ID. */
+function amoCreateStage() {
+  var NAME = "ТЕЛЕГРАМ БОТ";
+  var props  = PropertiesService.getScriptProperties();
+  var domain = String(props.getProperty("AMO_DOMAIN") || "").replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+  var headers = { Authorization: "Bearer " + props.getProperty("AMO_TOKEN") };
+  var base = "https://" + domain + "/api/v4/leads/pipelines";
+  var pipes = JSON.parse(UrlFetchApp.fetch(base, { headers: headers }).getContentText())._embedded.pipelines;
+  var pid = Number(props.getProperty("AMO_PIPELINE_ID"));
+  var pipe = pipes.filter(function (p) { return pid ? p.id == pid : p.is_main; })[0];
+  var sts = pipe._embedded.statuses;
+  var ex = sts.filter(function (s) { return String(s.name).toUpperCase() == NAME; })[0];
+  var id = ex && ex.id;
+  if (!id) {
+    var work = sts.filter(function (s) { return s.type == 0 && s.id != 142 && s.id != 143; });
+    var minSort = Math.min.apply(null, work.map(function (s) { return s.sort; }));
+    var res = UrlFetchApp.fetch(base + "/" + pipe.id + "/statuses", {
+      method: "post", contentType: "application/json", headers: headers, muteHttpExceptions: true,
+      payload: JSON.stringify([{ name: NAME, sort: minSort - 1, color: "#99ccff" }])
+    });
+    if (res.getResponseCode() >= 300) { console.log("Ошибка " + res.getResponseCode() + ": " + res.getContentText().slice(0, 400)); return; }
+    id = JSON.parse(res.getContentText())._embedded.statuses[0].id;
+  }
+  props.setProperty("AMO_STATUS_ID", String(id));
+  console.log("Этап «" + NAME + "» в воронке «" + pipe.name + "»: ID " + id + " — сохранён в AMO_STATUS_ID");
 }
