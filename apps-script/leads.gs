@@ -332,7 +332,7 @@ function amoCreateStage() {
     var minSort = Math.min.apply(null, work.map(function (s) { return s.sort; }));
     var res = UrlFetchApp.fetch(base + "/" + pipe.id + "/statuses", {
       method: "post", contentType: "application/json", headers: headers, muteHttpExceptions: true,
-      payload: JSON.stringify([{ name: NAME, sort: minSort - 1, color: "#99ccff" }])
+      payload: JSON.stringify([{ name: NAME, sort: minSort - 1, color: "#98cbff" }])
     });
     if (res.getResponseCode() >= 300) { console.log("Ошибка " + res.getResponseCode() + ": " + res.getContentText().slice(0, 400)); return; }
     id = JSON.parse(res.getContentText())._embedded.statuses[0].id;
